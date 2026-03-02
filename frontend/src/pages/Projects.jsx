@@ -1,0 +1,315 @@
+import { useState, useEffect, useRef } from 'react'
+import { motion, useInView, AnimatePresence } from 'framer-motion'
+import { Github, ExternalLink } from 'lucide-react'
+import { contentService } from '../services/contentService'
+import { useMouseTilt } from '../hooks/useMouseTilt'
+import ProjectDetailModal from '../components/ProjectDetailModal/ProjectDetailModal'
+
+export default function Projects() {
+  const [projects, setProjects] = useState([])
+  const [modulesLoaded, setModulesLoaded] = useState(false)
+  const [selectedProject, setSelectedProject] = useState(null)
+  const sectionRef = useRef(null)
+  const inView = useInView(sectionRef, { once: true, amount: 0.2 })
+
+  useEffect(() => {
+    contentService.getProjects().then(setProjects)
+  }, [])
+
+  useEffect(() => {
+    if (!inView) return
+    const t = setTimeout(() => setModulesLoaded(true), 1400)
+    return () => clearTimeout(t)
+  }, [inView])
+
+  return (
+    <motion.div
+      ref={sectionRef}
+      className="relative max-w-6xl mx-auto px-6 py-8"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Reduced ambient glow so cards dominate */}
+      <div
+        className="absolute inset-0 -mx-4 -my-4 rounded-3xl pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0, 212, 255, 0.045) 0%, transparent 70%)',
+          boxShadow: 'inset 0 0 60px rgba(0, 212, 255, 0.02)',
+        }}
+        aria-hidden
+      />
+
+      <AnimatePresence>
+        {inView && !modulesLoaded && (
+          <motion.div
+            key="loading-modules"
+            className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+          >
+            <p className="font-space text-accent/90 text-sm flex items-center gap-2">
+              <span className="text-green-500/80">&gt;</span>
+              Loading Mission Modules...
+              <motion.span
+                animate={{ opacity: [1, 0] }}
+                transition={{ duration: 0.6, repeat: Infinity }}
+              >
+                _
+              </motion.span>
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {inView && modulesLoaded && (
+        <motion.div
+          className="absolute inset-0 rounded-3xl pointer-events-none overflow-hidden z-[1]"
+          aria-hidden
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
+        >
+          <motion.div
+            className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent"
+            initial={{ top: '0%' }}
+            animate={{ top: '100%' }}
+            transition={{ duration: 2, ease: [0.22, 0.61, 0.36, 1] }}
+            style={{ boxShadow: '0 0 20px rgba(0, 212, 255, 0.5)' }}
+          />
+        </motion.div>
+      )}
+
+      <div className="relative">
+        <h1 className="font-orbitron text-2xl md:text-3xl text-accent mb-2">
+          Projects
+        </h1>
+        <p className="text-gray-400 font-exo text-base mb-6">
+          Mission modules
+        </p>
+
+        <div className="grid gap-4 md:grid-cols-2 items-stretch">
+          {projects.map((project, i) => (
+            <ProjectCard
+              key={project.id}
+              project={project}
+              index={i}
+              inView={inView && modulesLoaded}
+              onSelect={setSelectedProject}
+            />
+          ))}
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {selectedProject && (
+          <ProjectDetailModal
+            project={selectedProject}
+            onClose={() => setSelectedProject(null)}
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+}
+
+function ProjectCard({ project, index, inView, onSelect }) {
+  const [hovered, setHovered] = useState(false)
+  const { ref: tiltRef, style: tiltStyle, mousePos, handleMouseMove, handleMouseLeave } = useMouseTilt({
+    maxTilt: 6,
+    perspective: 1000,
+  })
+  const isFlagship = project.flagship === true
+
+  const handleMouseEnter = () => setHovered(true)
+  const handleMouseLeaveCard = () => {
+    setHovered(false)
+    handleMouseLeave()
+  }
+  const handleCardClick = () => onSelect?.(project)
+
+  const hasSystemMeta = project.status != null || project.type != null || project.role != null || project.scale != null
+  const hasImpactFirst = project.missionObjective != null && Array.isArray(project.impact) && project.impact.length > 0
+  const impactList = hasImpactFirst ? project.impact : []
+  const missionStatement = project.missionObjective ?? project.description ?? ''
+
+  return (
+    <motion.div
+      ref={tiltRef}
+      role={onSelect ? 'button' : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      onClick={onSelect ? handleCardClick : undefined}
+      onKeyDown={onSelect ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(); } } : undefined}
+      className={`relative rounded-2xl overflow-visible ${onSelect ? 'cursor-pointer' : ''}`}
+      style={tiltStyle}
+      initial={{ opacity: 0, y: 24, scale: isFlagship ? 0.98 : 0.96 }}
+      animate={
+        inView
+          ? {
+              opacity: 1,
+              y: 0,
+              scale: isFlagship ? 1.04 : 1,
+              transition: {
+                delay: 0.4 + index * 0.12,
+                duration: 0.5,
+                ease: [0.22, 0.61, 0.36, 1],
+              },
+            }
+          : {}
+      }
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeaveCard}
+    >
+      {/* Outer glow: flagship strongest; secondary ~15–20% reduced */}
+      <motion.div
+        className="absolute -inset-px rounded-2xl -z-10"
+        animate={{
+          boxShadow: hovered
+            ? isFlagship
+              ? '0 0 50px rgba(0, 212, 255, 0.2), 0 0 80px rgba(0, 212, 255, 0.1)'
+              : '0 0 42px rgba(0, 212, 255, 0.16), 0 0 70px rgba(0, 212, 255, 0.08)'
+            : isFlagship
+              ? '0 0 40px rgba(0, 212, 255, 0.12), 0 0 60px rgba(0, 212, 255, 0.06)'
+              : '0 0 26px rgba(0, 212, 255, 0.065), 0 0 45px rgba(0, 212, 255, 0.04)',
+        }}
+        transition={{ duration: 0.25 }}
+      />
+
+      <motion.div
+        className="h-full"
+        animate={{ y: [0, -4, 0] }}
+        transition={{
+          duration: 4 + index * 0.4,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+      >
+        <motion.div
+          className="relative rounded-2xl border border-glass-border bg-panel-bg/95 backdrop-blur-md overflow-hidden h-full flex flex-col"
+          style={
+            isFlagship
+              ? {
+                  borderColor: 'rgba(0, 212, 255, 0.35)',
+                  boxShadow: 'inset 0 0 0 1px rgba(0, 212, 255, 0.08), 0 0 30px rgba(0, 212, 255, 0.06)',
+                  background: 'linear-gradient(180deg, rgba(0, 212, 255, 0.04) 0%, rgba(2, 6, 23, 0.95) 30%)',
+                }
+              : undefined
+          }
+          animate={{
+            y: hovered ? -4 : 0,
+            borderColor: isFlagship ? 'rgba(0, 212, 255, 0.4)' : hovered ? 'rgba(0, 212, 255, 0.28)' : 'rgba(255,255,255,0.07)',
+            boxShadow: hovered
+              ? isFlagship
+                ? '0 0 0 1px rgba(0, 212, 255, 0.4), 0 24px 48px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 212, 255, 0.15), inset 0 0 40px rgba(0, 212, 255, 0.04)'
+                : '0 0 0 1px rgba(0, 212, 255, 0.32), 0 24px 48px -12px rgba(0, 0, 0, 0.48), 0 0 32px rgba(0, 212, 255, 0.1), inset 0 0 32px rgba(0, 212, 255, 0.02)'
+              : isFlagship
+                ? 'inset 0 0 0 1px rgba(0, 212, 255, 0.08), 0 0 30px rgba(0, 212, 255, 0.06)'
+                : '0 0 0 1px rgba(255,255,255,0.05), 0 20px 40px -12px rgba(0, 0, 0, 0.4), 0 0 24px rgba(0, 212, 255, 0.04)',
+          }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+        >
+          <div
+            className="absolute inset-0 pointer-events-none rounded-2xl"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 40%, transparent 70%, rgba(0,212,255,0.02) 100%)',
+            }}
+          />
+          <div
+            className="absolute inset-0 pointer-events-none rounded-2xl transition-opacity duration-[250ms]"
+            style={{
+              opacity: hovered ? 1 : 0,
+              background: `radial-gradient(circle at ${mousePos.x * 100}% ${mousePos.y * 100}%, rgba(0, 212, 255, 0.1) 0%, transparent 50%)`,
+            }}
+            aria-hidden
+          />
+
+          <div className="relative p-5 md:p-6 flex flex-col flex-1 min-h-0">
+            {/* Title — strongest contrast */}
+            <h3
+              className="font-orbitron text-xl md:text-2xl font-semibold mb-1.5 flex-shrink-0"
+              style={{
+                color: 'rgba(0, 212, 255, 1)',
+                textShadow: isFlagship ? '0 0 24px rgba(0, 212, 255, 0.55), 0 0 48px rgba(0, 212, 255, 0.28)' : '0 0 20px rgba(0, 212, 255, 0.4), 0 0 40px rgba(0, 212, 255, 0.18)',
+              }}
+            >
+              {project.title}
+            </h3>
+
+            {/* Metadata — 65–70% opacity, slightly smaller; title stays primary */}
+            {hasSystemMeta && (
+              <div className="font-space text-[11px] text-gray-500 mb-2 flex flex-wrap gap-x-3 gap-y-0.5 opacity-[0.68]">
+                {project.status != null && <span><span className="text-gray-600">STATUS</span> {project.status}</span>}
+                {project.type != null && <span><span className="text-gray-600">TYPE</span> {project.type}</span>}
+                {project.role != null && <span><span className="text-gray-600">ROLE</span> {project.role}</span>}
+                {project.scale != null && <span><span className="text-gray-600">SCALE</span> {project.scale}</span>}
+              </div>
+            )}
+
+            {/* MISSION OBJECTIVE + IMPACT — tighter spacing */}
+            {hasImpactFirst ? (
+              <>
+                <div className="mb-2">
+                  <div className="font-space text-gray-500 text-xs uppercase tracking-wider mb-0.5">MISSION OBJECTIVE</div>
+                  <p className="font-exo text-gray-300 text-sm leading-relaxed">{missionStatement}</p>
+                </div>
+                <div className="mb-3 flex-1 min-h-0">
+                  <div className="font-space text-gray-500 text-xs uppercase tracking-wider mb-1">IMPACT</div>
+                  <ul className="font-exo text-sm leading-relaxed space-y-0.5 list-none">
+                    {impactList.map((line, j) => (
+                      <li key={j} className="flex gap-2 text-gray-200">
+                        <span className="text-accent/90 shrink-0">•</span>
+                        <span>{line}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            ) : (
+              <p className="text-gray-300 font-exo text-sm leading-relaxed mb-3 flex-1 opacity-80">
+                {missionStatement}
+              </p>
+            )}
+
+            {/* Tech tags — slightly dimmer base, brighten on hover */}
+            <div className="flex flex-wrap gap-1.5 pt-2.5 border-t border-white/10">
+              {project.techStack?.map((tech) => (
+                <motion.span
+                  key={tech}
+                  className="px-2.5 py-0.5 rounded-md bg-accent/10 font-exo text-xs text-accent/80"
+                  animate={{
+                    opacity: hovered ? 1 : 0.7,
+                  }}
+                  transition={{ duration: 0.25 }}
+                >
+                  {tech}
+                </motion.span>
+              ))}
+            </div>
+            <div className="flex gap-4 mt-2.5" onClick={(e) => e.stopPropagation()}>
+              <a
+                href={project.githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-gray-400 hover:text-accent font-exo text-sm transition-colors"
+              >
+                <Github size={16} /> GitHub
+              </a>
+              <a
+                href={project.liveUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-gray-400 hover:text-accent font-exo text-sm transition-colors"
+              >
+                <ExternalLink size={16} /> Live demo
+              </a>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
+  )
+}
