@@ -1,2 +1,18 @@
-# orbit-os
-🚀 Interactive space-themed developer operating system featuring dynamic portfolio, live resume CMS, and admin-controlled content platform.
+# Orbit OS 🚀
+
+## Overview
+Personal interactive developer operating system.
+
+## Tech Stack
+React
+Three.js
+Framer Motion
+TailwindCSS
+
+## Architecture
+Frontend → API → PostgreSQL → Cloudinary
+
+## Roadmap
+- Phase 1: Interactive Frontend
+- Phase 2: Backend CMS
+- Phase 3: Secure Admin Portal
