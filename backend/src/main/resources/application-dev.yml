@@ -1,0 +1,15 @@
+# Local development overrides
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/portfolio
+    username: postgres
+    password: postgres
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: validate
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    com.orbitos: DEBUG

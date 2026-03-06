@@ -1,0 +1,5 @@
+# Use with: --spring.profiles.active=postgres (or default when using PostgreSQL URL)
+# Ensures JSON columns use JSONB; also set by JsonColumnDefinitionInitializer from datasource URL.
+app:
+  json:
+    column-definition: jsonb

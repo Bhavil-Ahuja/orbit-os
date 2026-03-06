@@ -1,0 +1,26 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+.vscode/
+
+# Spring Boot
+*.log
+spring-boot-devtools.properties
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local overrides (optional, keep application-local.yml in repo)
+# application-local.yml

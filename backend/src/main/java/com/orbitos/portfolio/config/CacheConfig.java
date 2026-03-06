@@ -1,0 +1,30 @@
+package com.orbitos.portfolio.config;
+
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
+
+/**
+ * In-memory cache configuration. No Redis or external cache.
+ * Cache names: navigation, portfolio, skillOrbits, resumeTerminal.
+ */
+@Configuration
+public class CacheConfig {
+
+    private static final List<String> CACHE_NAMES = List.of(
+            "navigation",
+            "portfolio",
+            "skillOrbits",
+            "resumeTerminal"
+    );
+
+    @Bean
+    public CacheManager cacheManager() {
+        ConcurrentMapCacheManager cacheManager = new ConcurrentMapCacheManager();
+        cacheManager.setCacheNames(CACHE_NAMES);
+        return cacheManager;
+    }
+}

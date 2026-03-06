@@ -1,0 +1,39 @@
+# Default: PostgreSQL. To run without DB use: ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+spring:
+  application:
+    name: portfolio
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/portfolio
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        default_schema: public
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+    open-in-view: false
+
+# Single-user admin auth. Set ADMIN_USERNAME, ADMIN_PASSWORD_HASH (BCrypt), ADMIN_JWT_SECRET in production.
+admin:
+  auth:
+    username: ${ADMIN_USERNAME:admin}
+    passwordHash: ${ADMIN_PASSWORD_HASH:$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy}
+    jwtSecret: ${ADMIN_JWT_SECRET:dev-secret-min-32-bytes-for-hs256-please-set-in-prod}
+    jwtExpirationSeconds: ${ADMIN_JWT_EXPIRATION_SECONDS:86400}
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
