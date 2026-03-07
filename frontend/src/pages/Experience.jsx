@@ -180,10 +180,10 @@ export default function Experience() {
   const refreshItems = async () => {
     try {
       await refetchBootstrap()
-      const next = await contentService.getExperience()
+      const next = await publicApi.getExperience()
       setItems(Array.isArray(next) ? next : [])
     } catch (_) {
-      const next = await publicApi.getExperience().catch(() => [])
+      const next = await contentService.getExperience().then((d) => d ?? []).catch(() => [])
       setItems(Array.isArray(next) ? next : [])
     }
   }

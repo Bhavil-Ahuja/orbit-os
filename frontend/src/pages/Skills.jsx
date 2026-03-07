@@ -418,7 +418,17 @@ function SkillFormModal({ skill, categories, onClose, onSaved }) {
       if (isEdit) {
         await adminApi.updateSkill(skill.id, { name: form.name.trim(), categoryId: categoryId || undefined })
       } else {
-        await adminApi.createSkill({ name: form.name.trim(), categoryId })
+        const names = form.name.split(',').map((s) => s.trim()).filter(Boolean)
+        if (names.length === 0) {
+          setError('Enter at least one skill name')
+          setSaving(false)
+          return
+        }
+        if (names.length === 1) {
+          await adminApi.createSkill({ name: names[0], categoryId })
+        } else {
+          await adminApi.createSkillsBatch({ categoryId, names })
+        }
       }
       await onSaved()
     } catch (e) {
@@ -452,8 +462,16 @@ function SkillFormModal({ skill, categories, onClose, onSaved }) {
         </div>
         <form onSubmit={handleSubmit} className="p-4 space-y-3 min-h-0">
           <div>
-            <label className={labelClass}>Name</label>
-            <input type="text" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} className={inputClass} required />
+            <label className={labelClass}>{isEdit ? 'Name' : 'Name(s)'}</label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              className={inputClass}
+              placeholder={isEdit ? undefined : 'e.g. Java, Python, Go'}
+              required
+            />
+            {!isEdit && <p className="text-gray-500/80 text-xs mt-1">Comma-separated for multiple skills</p>}
           </div>
           <div className="overflow-visible">
             <label className={labelClass}>Category</label>

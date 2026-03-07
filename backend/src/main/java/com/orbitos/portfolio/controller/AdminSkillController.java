@@ -1,6 +1,7 @@
 package com.orbitos.portfolio.controller;
 
 import com.orbitos.portfolio.dto.CreateSkillRequestDto;
+import com.orbitos.portfolio.dto.CreateSkillsBatchRequestDto;
 import com.orbitos.portfolio.dto.SkillDto;
 import com.orbitos.portfolio.dto.UpdateSkillRequestDto;
 import com.orbitos.portfolio.service.SkillService;
@@ -41,6 +42,14 @@ public class AdminSkillController {
         cacheEvictionService.evictPortfolio();
         cacheEvictionService.evictSkillOrbits();
         return ResponseEntity.ok(Map.of("id", id));
+    }
+
+    @PostMapping("/batch")
+    public ResponseEntity<Map<String, Integer>> createBatch(@Valid @RequestBody CreateSkillsBatchRequestDto request) {
+        int count = skillService.createSkillsBatch(request.getCategoryId(), request.getNames());
+        cacheEvictionService.evictPortfolio();
+        cacheEvictionService.evictSkillOrbits();
+        return ResponseEntity.ok(Map.of("count", count));
     }
 
     @PatchMapping("/{id}")

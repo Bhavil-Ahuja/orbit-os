@@ -27,10 +27,10 @@ export default function Publications() {
   const refreshPublications = async () => {
     try {
       await refetchBootstrap()
-      const next = await contentService.getPublications()
+      const next = await publicApi.getPublications()
       setPublications(Array.isArray(next) ? next : [])
     } catch (_) {
-      const next = await publicApi.getPublications().catch(() => [])
+      const next = await contentService.getPublications().then((d) => d ?? []).catch(() => [])
       setPublications(Array.isArray(next) ? next : [])
     }
   }

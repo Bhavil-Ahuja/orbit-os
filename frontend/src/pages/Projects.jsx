@@ -24,10 +24,10 @@ export default function Projects() {
   const refreshProjects = async () => {
     try {
       await refetchBootstrap()
-      const next = await contentService.getProjects()
+      const next = await publicApi.getProjects()
       setProjects(Array.isArray(next) ? next : [])
     } catch (_) {
-      const next = await publicApi.getProjects().catch(() => [])
+      const next = await contentService.getProjects().then((d) => (Array.isArray(d) ? d : [])).catch(() => [])
       setProjects(Array.isArray(next) ? next : [])
     }
   }

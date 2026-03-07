@@ -15,4 +15,7 @@ public interface SkillRepository extends JpaRepository<Skill, Long> {
 
     @Query("SELECT s FROM Skill s JOIN FETCH s.category WHERE s.id = :id")
     Optional<Skill> findByIdWithCategory(@Param("id") Long id);
+
+    @Query("SELECT COALESCE(MAX(s.sortOrder), 0) FROM Skill s WHERE s.category.id = :categoryId")
+    Optional<Integer> findMaxSortOrderByCategoryId(@Param("categoryId") Long categoryId);
 }

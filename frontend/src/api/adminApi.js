@@ -83,6 +83,13 @@ export const adminApi = {
     });
   },
 
+  createSkillsBatch(data) {
+    return apiRequest("/api/admin/skills/batch", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
   updateSkill(id, data) {
     return apiRequest(`/api/admin/skills/${id}`, {
       method: "PATCH",

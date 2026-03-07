@@ -90,6 +90,26 @@ public class SkillService {
         return skill.getId();
     }
 
+    /** Create multiple skills under one category in one transaction. Names are trimmed; blanks are skipped. */
+    @Transactional
+    public int createSkillsBatch(Long categoryId, List<String> names) {
+        if (categoryId == null || names == null || names.isEmpty()) return 0;
+        SkillCategory category = skillCategoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("SkillCategory", String.valueOf(categoryId)));
+        List<String> trimmed = names.stream().map(String::trim).filter(s -> !s.isEmpty()).distinct().toList();
+        int maxOrder = skillRepository.findMaxSortOrderByCategoryId(categoryId).orElse(0);
+        int order = maxOrder;
+        for (String name : trimmed) {
+            Skill skill = Skill.builder()
+                    .name(name)
+                    .category(category)
+                    .sortOrder(++order)
+                    .build();
+            skillRepository.save(skill);
+        }
+        return trimmed.size();
+    }
+
     @Transactional
     public SkillDto updateSkill(Long id, UpdateSkillRequestDto dto) {
         Skill skill = skillRepository.findById(id)
