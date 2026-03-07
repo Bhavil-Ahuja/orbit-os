@@ -16,7 +16,7 @@ export default function Projects() {
   const [selectedProject, setSelectedProject] = useState(null)
   const [projectForm, setProjectForm] = useState(null) // null | 'add' | project (edit)
   const sectionRef = useRef(null)
-  const inView = useInView(sectionRef, { once: true, amount: 0.2 })
+  const inView = useInView(sectionRef, { once: true, amount: 0.05 })
 
   const isAdmin = useIsAdmin()
   const refetchBootstrap = useAppStore((s) => s.refetchBootstrap)
