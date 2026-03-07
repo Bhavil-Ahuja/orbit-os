@@ -230,11 +230,12 @@ export default function Experience() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Ambient glow only (no inset shadow) — avoids extra vertical lines at left/right */}
+      {/* Same outer boundary as Projects / Publications — strong and visible */}
       <div
         className="absolute inset-0 -mx-4 -my-4 rounded-3xl pointer-events-none"
         style={{
           background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0, 212, 255, 0.045) 0%, transparent 70%)',
+          boxShadow: 'inset 0 0 60px rgba(0, 212, 255, 0.02)',
         }}
         aria-hidden
       />
@@ -265,7 +266,7 @@ export default function Experience() {
 
       {inView && archiveLoaded && (
         <motion.div
-          className="absolute inset-0 pointer-events-none z-[1] overflow-hidden"
+          className="absolute inset-0 pointer-events-none z-[1]"
           aria-hidden
           initial={{ opacity: 0 }}
           animate={{ opacity: sweepDone ? 0 : 1 }}
