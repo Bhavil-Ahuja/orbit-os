@@ -1,25 +1,29 @@
 import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useAppStore } from '../../store/useAppStore'
 import { contentService } from '../../services/contentService'
 
 /**
  * Handles bootstrap API state only. When mock: no API call, render children.
  * When real API: load once, show loading/error until data ready, then render children.
- * Console and other pages only care about rendering; they read from store/contentService.
+ * /whoami is exempt so the admin page loads even if the public API is slow or fails.
  */
 export default function BootstrapLoader({ children }) {
+  const location = useLocation()
   const loadBootstrap = useAppStore((state) => state.loadBootstrap)
   const bootstrapData = useAppStore((state) => state.bootstrapData)
   const bootstrapLoading = useAppStore((state) => state.bootstrapLoading)
   const bootstrapError = useAppStore((state) => state.bootstrapError)
 
   const useMock = contentService.useMock
+  const isWhoAmI = location.pathname === '/whoami'
 
   useEffect(() => {
     loadBootstrap(useMock)
   }, [loadBootstrap, useMock])
 
   if (useMock) return children
+  if (isWhoAmI) return children
 
   if (bootstrapLoading && !bootstrapData) {
     return (

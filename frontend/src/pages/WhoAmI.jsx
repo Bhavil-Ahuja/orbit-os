@@ -31,7 +31,7 @@ export default function WhoAmI() {
     setMessagesLoading(true)
     adminApi
       .getContactSubmissions()
-      .then(setMessages)
+      .then((res) => setMessages(Array.isArray(res) ? res : []))
       .catch(() => setMessages([]))
       .finally(() => setMessagesLoading(false))
   }, [adminAuthenticated])
@@ -80,7 +80,7 @@ export default function WhoAmI() {
             <p className="text-gray-500 font-space text-sm">No messages yet.</p>
           ) : (
             <ul className="space-y-4">
-              {messages.map((m) => (
+              {(Array.isArray(messages) ? messages : []).map((m) => (
                 <li
                   key={m.id}
                   className="rounded-lg border border-white/10 bg-black/30 p-4 font-exo text-sm"
