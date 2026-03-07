@@ -228,16 +228,6 @@ export default function Experience() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Ambient boundary — same as Projects / Publications */}
-      <div
-        className="absolute inset-0 -mx-4 -my-4 rounded-3xl pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0, 212, 255, 0.045) 0%, transparent 70%)',
-          boxShadow: 'inset 0 0 60px rgba(0, 212, 255, 0.02)',
-        }}
-        aria-hidden
-      />
-
       <AnimatePresence>
         {inView && !archiveLoaded && (
           <motion.div
