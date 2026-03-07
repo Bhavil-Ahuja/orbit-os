@@ -171,6 +171,7 @@ export default function Experience() {
   const [items, setItems] = useState([])
   const [entryKey, setEntryKey] = useState(0)
   const [archiveLoaded, setArchiveLoaded] = useState(false)
+  const [sweepDone, setSweepDone] = useState(false)
   const [selectedMission, setSelectedMission] = useState(null)
   const [experienceForm, setExperienceForm] = useState(null) // null | 'add' | mission (edit)
   const sectionRef = useRef(null)
@@ -204,6 +205,7 @@ export default function Experience() {
   useEffect(() => {
     if (prevSectionRef.current !== 'experience' && activeSection === 'experience') {
       setEntryKey((k) => k + 1)
+      setSweepDone(false)
     }
     prevSectionRef.current = activeSection
   }, [activeSection])
@@ -228,12 +230,11 @@ export default function Experience() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Same ambient boundary as Projects / Publications — consistent loading boundary */}
+      {/* Ambient glow only (no inset shadow) — avoids extra vertical lines at left/right */}
       <div
         className="absolute inset-0 -mx-4 -my-4 rounded-3xl pointer-events-none"
         style={{
           background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0, 212, 255, 0.045) 0%, transparent 70%)',
-          boxShadow: 'inset 0 0 60px rgba(0, 212, 255, 0.02)',
         }}
         aria-hidden
       />
@@ -264,11 +265,11 @@ export default function Experience() {
 
       {inView && archiveLoaded && (
         <motion.div
-          className="absolute inset-0 pointer-events-none z-[1]"
+          className="absolute inset-0 pointer-events-none z-[1] overflow-hidden"
           aria-hidden
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.2 }}
+          animate={{ opacity: sweepDone ? 0 : 1 }}
+          transition={{ duration: sweepDone ? 0.3 : 0.2 }}
         >
           <motion.div
             className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent"
@@ -276,6 +277,7 @@ export default function Experience() {
             animate={{ top: '100%' }}
             transition={{ duration: 2, ease: [0.22, 0.61, 0.36, 1] }}
             style={{ boxShadow: '0 0 20px rgba(0, 212, 255, 0.5)' }}
+            onAnimationComplete={() => setSweepDone(true)}
           />
         </motion.div>
       )}
