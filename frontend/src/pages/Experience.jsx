@@ -224,18 +224,18 @@ export default function Experience() {
   return (
     <motion.div
       ref={sectionRef}
-      className="relative max-w-3xl mx-auto px-6 py-12"
+      className="relative max-w-3xl mx-auto px-6 py-12 min-h-[min(100vh,900px)]"
       initial={{ opacity: 1 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Same outer boundary as Projects / Publications — strong and visible */}
+      {/* Outer boundary: gradient + thin border (no inset shadow to avoid inner boundary) */}
       <div
-        className="absolute inset-0 -mx-4 -my-4 rounded-3xl pointer-events-none"
+        className="absolute inset-0 -mx-4 -my-4 rounded-3xl pointer-events-none border border-white/[0.06]"
         style={{
           background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0, 212, 255, 0.045) 0%, transparent 70%)',
-          boxShadow: 'inset 0 0 60px rgba(0, 212, 255, 0.02)',
+          boxShadow: '0 0 0 1px rgba(0, 212, 255, 0.06)',
         }}
         aria-hidden
       />

@@ -58,7 +58,7 @@ export default function Projects() {
   return (
     <motion.div
       ref={sectionRef}
-      className="relative max-w-6xl mx-auto px-6 py-8"
+      className="relative max-w-6xl mx-auto px-6 py-8 min-h-[min(100vh,900px)]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
