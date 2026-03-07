@@ -522,6 +522,16 @@ export default function Skills() {
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [webglContextLost, setWebglContextLost] = useState(false)
   const [orbitRemountKey, setOrbitRemountKey] = useState(0)
+
+  // Auto-recover from GPU context loss: remount orbit after a short delay so the user never sees an error
+  useEffect(() => {
+    if (!webglContextLost) return
+    const t = setTimeout(() => {
+      setWebglContextLost(false)
+      setOrbitRemountKey((k) => k + 1)
+    }, 800)
+    return () => clearTimeout(t)
+  }, [webglContextLost])
   const skillsByOrbit = useMemo(() => groupSkillsByCategory(skills), [skills])
   const skillIdToCategory = useMemo(() => {
     const m = {}
@@ -623,18 +633,8 @@ export default function Skills() {
                 onContextRestored={() => setWebglContextLost(false)}
               />
             ) : skills.length > 0 && webglContextLost ? (
-              <div className="w-full h-full rounded-2xl flex flex-col items-center justify-center gap-4 p-4 text-center border border-white/10 bg-black/30">
-                <p className="text-gray-400 font-space text-sm">
-                  Orbit view paused (GPU context lost). This can happen when the tab was in the background or on some mobile devices.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => { setWebglContextLost(false); setOrbitRemountKey((k) => k + 1) }}
-                  className="px-4 py-2 rounded-lg bg-accent/20 border border-accent/50 text-accent font-orbitron text-sm hover:bg-accent/30 transition-colors"
-                >
-                  Try again
-                </button>
-                <p className="text-gray-500 font-space text-xs">If it still fails, refresh the page.</p>
+              <div className="w-full h-full rounded-2xl flex items-center justify-center border border-white/10 bg-black/30">
+                <p className="text-gray-400 font-space text-sm">Reconnecting…</p>
               </div>
             ) : skills.length > 0 && !orbitInView ? (
               <div className="w-full h-full rounded-2xl flex items-center justify-center text-gray-500 font-space text-sm border border-white/10 bg-black/20">

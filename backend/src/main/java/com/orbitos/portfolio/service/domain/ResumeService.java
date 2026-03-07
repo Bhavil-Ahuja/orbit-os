@@ -27,13 +27,15 @@ public class ResumeService {
     private final ResumeMapper resumeMapper;
     private final ObjectMapper objectMapper;
     private final CloudinaryService cloudinaryService;
+    private final PdfToTerminalParser pdfToTerminalParser;
 
     public ResumeService(ResumeRepository resumeRepository, ResumeMapper resumeMapper, ObjectMapper objectMapper,
-                         CloudinaryService cloudinaryService) {
+                         CloudinaryService cloudinaryService, PdfToTerminalParser pdfToTerminalParser) {
         this.resumeRepository = resumeRepository;
         this.resumeMapper = resumeMapper;
         this.objectMapper = objectMapper;
         this.cloudinaryService = cloudinaryService;
+        this.pdfToTerminalParser = pdfToTerminalParser;
     }
 
     @Transactional(readOnly = true)
@@ -85,23 +87,30 @@ public class ResumeService {
 
     /**
      * Uploads the file to Cloudinary and updates the resume singleton with the returned URL
-     * (both view and download use the same URL). Creates the resume row if it does not exist.
+     * (both view and download use the same URL). Parses the PDF to extract text for terminal view
+     * and stores it in terminal_data. Creates the resume row if it does not exist.
      */
     @Transactional
     public ResumeDto uploadResumeFile(MultipartFile file) throws IOException {
+        ResumeTerminalDto terminalData = null;
+        try {
+            terminalData = pdfToTerminalParser.parse(file.getInputStream());
+        } catch (Exception e) {
+            // Parsing failed; leave terminal_data unchanged or null
+        }
         String url = cloudinaryService.uploadRaw(file);
         Resume resume = resumeRepository.findFirstByOrderByIdAsc().orElse(null);
         if (resume == null) {
             resume = Resume.builder()
                     .viewUrl(url)
                     .downloadUrl(url)
-                    .terminalData(null)
+                    .terminalData(terminalData != null ? objectMapper.writeValueAsString(terminalData) : null)
                     .updatedAt(Instant.now())
                     .build();
             resume = resumeRepository.save(resume);
             return resumeMapper.toDto(resume);
         }
-        UpdateResumeRequestDto dto = new UpdateResumeRequestDto(url, url, null);
+        UpdateResumeRequestDto dto = new UpdateResumeRequestDto(url, url, terminalData);
         return updateResume(dto);
     }
 }

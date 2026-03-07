@@ -124,7 +124,18 @@ export default function SpaceBackground() {
   const [nebulaX, nebulaY] = (bootComplete && SECTION_NEBULA_OFFSET[activeSection]) ? SECTION_NEBULA_OFFSET[activeSection] : [0, 0]
   const [experienceDrift, setExperienceDrift] = useState(false)
   const [webglContextLost, setWebglContextLost] = useState(false)
+  const [canvasKey, setCanvasKey] = useState(0)
   const prevSectionRef = useRef(activeSection)
+
+  // Auto-recover from GPU context loss: remount canvas after a short delay
+  useEffect(() => {
+    if (!webglContextLost) return
+    const t = setTimeout(() => {
+      setWebglContextLost(false)
+      setCanvasKey((k) => k + 1)
+    }, 800)
+    return () => clearTimeout(t)
+  }, [webglContextLost])
 
   useEffect(() => {
     if (bootComplete && prevSectionRef.current !== 'experience' && activeSection === 'experience') {
@@ -203,6 +214,7 @@ export default function SpaceBackground() {
         onAnimationComplete={() => experienceDrift && setExperienceDrift(false)}
       >
         <Canvas
+          key={canvasKey}
           dpr={[1, 1.5]}
           camera={{ position: [0, 0, 20], fov: 60 }}
           gl={{

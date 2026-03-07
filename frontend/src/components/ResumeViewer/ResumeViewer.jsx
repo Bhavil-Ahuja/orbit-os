@@ -91,11 +91,11 @@ function Watermark() {
 }
 
 function TerminalView({ data }) {
-  if (!data) {
+  if (!data || (!data.name && !data.title && (!data.sections || data.sections.length === 0))) {
     return (
       <div className="p-6 font-space text-sm text-gray-500">
         <div className="text-accent/80">&gt; Terminal view: no structured data</div>
-        <div className="mt-2 text-gray-500">Configure resume.terminalData from API.</div>
+        <div className="mt-2 text-gray-500">Upload a resume PDF to auto-fill terminal view, or edit resume to set terminal data.</div>
       </div>
     )
   }
@@ -321,7 +321,7 @@ export default function ResumeViewer() {
         </div>
 
         {/* Content area: boot log or dossier/terminal. Single scroll context to avoid nested scroll issues. */}
-        <div className="relative w-full aspect-[8/10.5] max-h-[80vh] bg-black/60 min-h-[380px] flex flex-col min-h-0">
+        <div className="relative w-full aspect-[8/10.5] max-h-[80vh] bg-black/40 min-h-[380px] flex flex-col min-h-0">
           <AnimatePresence mode="wait">
             {showBootLog ? (
               <motion.div
@@ -353,7 +353,7 @@ export default function ResumeViewer() {
                       title="Resume"
                       className="w-full h-full border-0 block relative z-[1]"
                       style={{
-                        filter: 'brightness(0.82) contrast(1.05)',
+                        filter: 'brightness(1.05) contrast(1.08)',
                         minHeight: '100%',
                       }}
                     />
@@ -361,7 +361,7 @@ export default function ResumeViewer() {
                       className="absolute inset-0 pointer-events-none z-[2]"
                       style={{
                         background:
-                          'linear-gradient(180deg, rgba(10,10,20,0.25) 0%, rgba(10,10,20,0.12) 35%, rgba(10,10,20,0.06) 60%, transparent 85%)',
+                          'linear-gradient(180deg, rgba(10,10,20,0.08) 0%, transparent 40%)',
                         mixBlendMode: 'multiply',
                       }}
                     />
@@ -406,19 +406,19 @@ export default function ResumeViewer() {
                   '0 0 0 1px rgba(0,212,255,0.25), 0 0 60px rgba(0,212,255,0.12), inset 0 1px 0 0 rgba(255,255,255,0.04)',
               }}
             >
-              <div className="absolute inset-0 bg-black/40 overflow-hidden">
+              <div className="absolute inset-0 bg-black/30 overflow-hidden">
                 <Watermark />
                 <iframe
                   src={iframePdfUrl}
                   title="Resume Fullscreen"
                   className="w-full h-full border-0 block relative z-0"
-                  style={{ filter: 'brightness(0.82) contrast(1.05)' }}
+                  style={{ filter: 'brightness(1.05) contrast(1.08)' }}
                 />
                 <div
                   className="absolute inset-0 pointer-events-none z-[1]"
                   style={{
                     background:
-                      'linear-gradient(180deg, rgba(10,10,20,0.2) 0%, transparent 50%)',
+                      'linear-gradient(180deg, rgba(10,10,20,0.06) 0%, transparent 40%)',
                     mixBlendMode: 'multiply',
                   }}
                 />
