@@ -78,7 +78,7 @@ function SocialLink({ icon: Icon, label, href, delay }) {
 export default function SocialDock() {
   return (
     <motion.div
-      className="fixed bottom-6 left-1/2 z-40 flex items-center justify-center gap-3 px-4 py-3 rounded-2xl border border-glass-border bg-panel-bg/90 backdrop-blur-md shadow-panel"
+      className="fixed bottom-4 left-1/2 z-40 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-glass-border bg-panel-bg/90 backdrop-blur-md shadow-panel md:bottom-6 md:gap-3 md:px-4 md:py-3 md:rounded-2xl"
       initial={{ x: '-50%', y: 20, opacity: 0 }}
       animate={{ x: '-50%', y: 0, opacity: 1 }}
       transition={{ delay: 0.5 }}

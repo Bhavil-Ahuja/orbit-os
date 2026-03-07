@@ -55,7 +55,7 @@ export default function Console() {
     <div
       ref={scrollRef}
       id="console-scroll"
-      className="h-screen overflow-y-auto overflow-x-hidden snap-y snap-proximity scroll-smooth pr-24 md:pr-28"
+      className="h-screen overflow-y-auto overflow-x-hidden snap-y snap-proximity scroll-smooth pr-4 pt-[max(3.5rem,calc(env(safe-area-inset-top)+2.5rem))] md:pr-24 md:pt-24"
       style={{ scrollbarGutter: 'stable' }}
     >
       {SECTIONS.map(({ id, Component }) => {
@@ -66,7 +66,7 @@ export default function Console() {
             key={id}
             id={id}
             ref={sectionRef}
-            className="min-h-screen snap-start flex items-start justify-center pt-24 pb-12 px-4 overflow-hidden"
+            className="min-h-screen snap-start flex items-start justify-center pt-6 pb-20 px-4 overflow-hidden md:pt-24 md:pb-12"
           >
             <motion.div
               className="w-full max-w-4xl mx-auto"
