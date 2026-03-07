@@ -1,7 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
+import { Pencil, Trash2, Plus, X } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore'
+import { useIsAdmin } from '../hooks/useIsAdmin'
 import { contentService } from '../services/contentService'
+import { adminApi } from '../api/adminApi'
+import { publicApi } from '../api/publicApi'
 
 const ENTRY_DURATION_MS = 400
 const ENTRY_DELAY_MS = 100
@@ -26,7 +31,7 @@ function impactToBullets(impact) {
     .filter(Boolean)
 }
 
-function MissionCard({ mission, index }) {
+function MissionCard({ mission, index, isAdmin, onEdit, onDelete }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-50px' })
   const [hovered, setHovered] = useState(false)
@@ -143,6 +148,16 @@ function MissionCard({ mission, index }) {
           ))}
         </ul>
       </div>
+      {isAdmin && (
+        <div className="flex gap-2 mt-3 pt-3 border-t border-white/10">
+          <button type="button" onClick={() => onEdit?.(mission)} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-accent/40 text-accent/90 font-orbitron text-xs hover:bg-accent/10">
+            <Pencil size={12} /> Edit
+          </button>
+          <button type="button" onClick={() => onDelete?.(mission)} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-red-500/40 text-red-400/90 font-orbitron text-xs hover:bg-red-500/10">
+            <Trash2 size={12} /> Delete
+          </button>
+        </div>
+      )}
     </motion.div>
   )
 }
@@ -150,11 +165,25 @@ function MissionCard({ mission, index }) {
 export default function Experience() {
   const [items, setItems] = useState([])
   const [entryKey, setEntryKey] = useState(0)
+  const [experienceForm, setExperienceForm] = useState(null) // null | 'add' | mission (edit)
   const activeSection = useAppStore((s) => s.activeSection)
   const prevSectionRef = useRef(activeSection)
+  const isAdmin = useIsAdmin()
+  const refetchBootstrap = useAppStore((s) => s.refetchBootstrap)
+
+  const refreshItems = async () => {
+    try {
+      await refetchBootstrap()
+      const next = await contentService.getExperience()
+      setItems(Array.isArray(next) ? next : [])
+    } catch (_) {
+      const next = await publicApi.getExperience().catch(() => [])
+      setItems(Array.isArray(next) ? next : [])
+    }
+  }
 
   useEffect(() => {
-    contentService.getExperience().then(setItems)
+    contentService.getExperience().then((next) => setItems(Array.isArray(next) ? next : []))
   }, [])
 
   useEffect(() => {
@@ -163,6 +192,16 @@ export default function Experience() {
     }
     prevSectionRef.current = activeSection
   }, [activeSection])
+
+  const handleDelete = async (mission) => {
+    if (!isAdmin || !window.confirm(`Delete "${mission.mission}"?`)) return
+    try {
+      await adminApi.deleteExperience(mission.id)
+      await refreshItems()
+    } catch (e) {
+      window.alert(e?.message ?? 'Delete failed')
+    }
+  }
 
   return (
     <motion.div
@@ -197,16 +236,184 @@ export default function Experience() {
           />
         </div>
 
-        <h1 className="font-orbitron text-2xl md:text-3xl text-accent mb-2">
-          Experience
-        </h1>
-        <p className="text-gray-400 font-exo text-base mb-8">Mission logs</p>
+        <div className="flex items-center justify-between gap-4 mb-2">
+          <div>
+            <h1 className="font-orbitron text-2xl md:text-3xl text-accent mb-2">
+              Experience
+            </h1>
+            <p className="text-gray-400 font-exo text-base mb-8">Mission logs</p>
+          </div>
+          {isAdmin && (
+            <button type="button" onClick={() => setExperienceForm('add')} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-accent/40 text-accent/90 font-orbitron text-sm hover:bg-accent/10 shrink-0">
+              <Plus size={14} /> Add
+            </button>
+          )}
+        </div>
         <div className="space-y-4 relative pl-0 sm:pl-2">
           {items.map((mission, i) => (
-            <MissionCard key={mission.id} mission={mission} index={i} />
+            <MissionCard
+              key={mission.id}
+              mission={mission}
+              index={i}
+              isAdmin={isAdmin}
+              onEdit={() => setExperienceForm(mission)}
+              onDelete={() => handleDelete(mission)}
+            />
           ))}
         </div>
       </motion.div>
+
+      <AnimatePresence>
+        {experienceForm && (
+          <ExperienceFormModal
+            mission={experienceForm === 'add' ? null : experienceForm}
+            onClose={() => setExperienceForm(null)}
+            onSaved={async () => { await refreshItems(); setExperienceForm(null) }}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   )
+}
+
+const EXPERIENCE_STATUS_OPTIONS = ['ACTIVE', 'COMPLETED']
+
+function parsePeriod(periodStr) {
+  if (!periodStr || typeof periodStr !== 'string') return { fromDate: '', toDate: '', currentlyWorking: true }
+  const p = periodStr.trim()
+  const lower = p.toLowerCase()
+  if (lower === 'present' || lower.includes('present')) {
+    const match = p.match(/(\d{4})(?:-(\d{2}))?/)
+    if (match) return { fromDate: match[2] ? `${match[1]}-${match[2]}` : `${match[1]}-01`, toDate: '', currentlyWorking: true }
+    return { fromDate: '', toDate: '', currentlyWorking: true }
+  }
+  const range = p.split(/\s*[–\-]\s*/)
+  if (range.length >= 2) {
+    const from = range[0].trim()
+    const to = range[1].trim()
+    const fromMatch = from.match(/(\d{4})(?:-(\d{2}))?/) || from.match(/(\d{4})/)
+    const toMatch = to.match(/(\d{4})(?:-(\d{2}))?/) || to.match(/(\d{4})/)
+    const fromDate = fromMatch ? (fromMatch[2] ? `${fromMatch[1]}-${fromMatch[2]}` : `${fromMatch[1]}-01`) : ''
+    const toDate = toMatch ? (toMatch[2] ? `${toMatch[1]}-${toMatch[2]}` : `${toMatch[1]}-12`) : ''
+    return { fromDate, toDate, currentlyWorking: false }
+  }
+  return { fromDate: '', toDate: '', currentlyWorking: true }
+}
+
+function formatPeriod(fromDate, toDate, currentlyWorking) {
+  if (!fromDate) return currentlyWorking ? 'Present' : ''
+  return currentlyWorking ? `${fromDate} - Present` : (toDate ? `${fromDate} - ${toDate}` : fromDate)
+}
+
+const inputClass = 'w-full px-3 py-2 rounded-lg bg-void/80 border border-glass-border text-white font-space text-sm focus:border-accent/50 focus:outline-none'
+const labelClass = 'block text-xs text-gray-500 font-orbitron mb-1'
+
+function ExperienceFormModal({ mission, onClose, onSaved }) {
+  const isEdit = mission != null
+  const parsed = parsePeriod(mission?.period)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [form, setForm] = useState(() => ({
+    slug: mission?.slug ?? '',
+    mission: mission?.mission ?? '',
+    role: mission?.role ?? '',
+    status: mission?.status ?? 'ACTIVE',
+    fromDate: parsed.fromDate,
+    toDate: parsed.toDate,
+    currentlyWorking: parsed.currentlyWorking,
+    impact: Array.isArray(mission?.impact) ? mission.impact.join('\n') : '',
+  }))
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    setError('')
+    const period = formatPeriod(form.fromDate, form.toDate, form.currentlyWorking)
+    try {
+      const payload = {
+        slug: form.slug.trim().toLowerCase().replace(/\s+/g, '-'),
+        mission: form.mission.trim(),
+        role: form.role.trim(),
+        status: form.status.trim() || undefined,
+        period,
+        impact: form.impact.split(/\n/).map((s) => s.trim()).filter(Boolean),
+      }
+      if (isEdit) {
+        await adminApi.updateExperience(mission.id, payload)
+      } else {
+        await adminApi.createExperience(payload)
+      }
+      await onSaved()
+    } catch (e) {
+      setError(e?.message ?? 'Save failed')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const modal = (
+    <motion.div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={() => !saving && onClose()}
+      aria-modal="true"
+      role="dialog"
+    >
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" aria-hidden />
+      <motion.div
+        className="relative rounded-xl border border-glass-border bg-panel-bg/98 backdrop-blur-md w-full max-w-md max-h-[90vh] flex flex-col my-auto shrink-0"
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.96 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0">
+          <span className="font-orbitron text-accent">{isEdit ? 'Edit experience' : 'Add experience'}</span>
+          <button type="button" onClick={onClose} disabled={saving} className="p-1.5 rounded text-gray-400 hover:text-white" aria-label="Close"><X size={18} /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-4 space-y-3 overflow-y-auto min-h-0">
+          {['mission', 'role', 'slug'].map((key) => (
+            <div key={key}>
+              <label className={labelClass}>{key}</label>
+              <input type="text" value={form[key]} onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))} className={inputClass} required />
+            </div>
+          ))}
+          <div>
+            <label className={labelClass}>Status</label>
+            <select value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))} className={inputClass}>
+              {[...new Set([...EXPERIENCE_STATUS_OPTIONS, form.status].filter(Boolean))].map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>From (date)</label>
+              <input type="month" value={form.fromDate} onChange={(e) => setForm((f) => ({ ...f, fromDate: e.target.value }))} className={inputClass} />
+            </div>
+            <div>
+              <label className={labelClass}>To (date)</label>
+              <input type="month" value={form.toDate} onChange={(e) => setForm((f) => ({ ...f, toDate: e.target.value }))} className={inputClass} disabled={form.currentlyWorking} title={form.currentlyWorking ? 'Clear "Currently working" to set end date' : ''} />
+            </div>
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={form.currentlyWorking} onChange={(e) => setForm((f) => ({ ...f, currentlyWorking: e.target.checked, toDate: e.target.checked ? '' : f.toDate }))} className="rounded border border-glass-border bg-void/80 text-accent focus:ring-accent/50" />
+            <span className="text-sm text-gray-300 font-space">Currently working here (no end date)</span>
+          </label>
+          <div>
+            <label className={labelClass}>Impact (one per line)</label>
+            <textarea value={form.impact} onChange={(e) => setForm((f) => ({ ...f, impact: e.target.value }))} rows={3} className={`${inputClass} resize-y`} />
+          </div>
+          {error && <p className="text-red-400 text-xs">{error}</p>}
+          <div className="flex gap-2 pt-2">
+            <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg bg-accent/20 text-accent font-orbitron text-sm hover:bg-accent/30 disabled:opacity-50">{saving ? 'Saving…' : (isEdit ? 'Save' : 'Create')}</button>
+            <button type="button" onClick={onClose} disabled={saving} className="px-4 py-2 rounded-lg border border-glass-border text-gray-400 font-orbitron text-sm hover:text-white">Cancel</button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
+  )
+  return createPortal(modal, document.body)
 }

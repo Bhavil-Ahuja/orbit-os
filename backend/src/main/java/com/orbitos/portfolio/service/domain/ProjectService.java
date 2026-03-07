@@ -77,7 +77,7 @@ public class ProjectService {
                 .designDecisions(dto.getDesignDecisions() != null ? dto.getDesignDecisions() : new ArrayList<>())
                 .technicalChallenges(dto.getTechnicalChallenges() != null ? dto.getTechnicalChallenges() : new ArrayList<>())
                 .screenshots(dto.getScreenshots() != null ? dto.getScreenshots() : new ArrayList<>())
-                .state(DRAFT)
+                .state(PUBLISHED)
                 .createdAt(now)
                 .updatedAt(now)
                 .build();

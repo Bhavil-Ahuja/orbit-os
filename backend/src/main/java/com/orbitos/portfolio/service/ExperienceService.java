@@ -27,7 +27,7 @@ public class ExperienceService {
 
     @Transactional(readOnly = true)
     public List<ExperienceDto> findAll() {
-        List<Experience> experiences = experienceRepository.findAllByOrderBySortOrderAsc();
+        List<Experience> experiences = experienceRepository.findAllActiveFirstThenBySortOrder();
         return experienceMapper.toDtoList(experiences);
     }
 

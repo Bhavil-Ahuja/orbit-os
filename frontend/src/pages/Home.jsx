@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { contentService } from '../services/contentService'
 import { useAppStore } from '../store/useAppStore'
@@ -17,6 +18,7 @@ const DEFAULT_BOOT_LINES = [
 ]
 
 export default function Home() {
+  const navigate = useNavigate()
   const setBootComplete = useAppStore((s) => s.setBootComplete)
   const setBootInProgress = useAppStore((s) => s.setBootInProgress)
   const [landing, setLanding] = useState(null)
@@ -54,6 +56,7 @@ export default function Home() {
 
   const handleEnter = () => {
     setBootComplete(true)
+    navigate('/explore')
   }
 
   const name = landing?.name ?? 'BHAVIL AHUJA'
@@ -80,7 +83,7 @@ export default function Home() {
               <motion.span
                 className="inline-block min-w-[0.5em]"
                 animate={{ opacity: [1, 0] }}
-                transition={{ duration: 0.53, repeat: Infinity, ease: 'steps(1)' }}
+                transition={{ duration: 0.53, repeat: Infinity, ease: 'linear' }}
                 aria-hidden
               >
                 |
@@ -93,7 +96,7 @@ export default function Home() {
       <AnimatePresence>
         {showName && (
           <motion.div
-            className="relative z-10 text-center"
+            className="relative z-10 text-center min-h-[280px] md:min-h-[320px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
@@ -114,20 +117,24 @@ export default function Home() {
             >
               &ldquo;{tagline}&rdquo;
             </motion.p>
-            {showButton && (
-              <motion.button
-                type="button"
-                onClick={handleEnter}
-                className="px-8 py-4 rounded-lg font-orbitron text-accent border-2 border-accent/60 bg-accent/5 hover:bg-accent/15 hover:shadow-glow transition-all duration-300"
-                initial={{ opacity: 0, y: 10, filter: 'blur(6px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
-                whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(0, 212, 255, 0.4)' }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Explore the Universe
-              </motion.button>
-            )}
+            <div className="min-h-[3.5rem] flex items-center justify-center">
+              {showButton ? (
+                <motion.button
+                  type="button"
+                  onClick={handleEnter}
+                  className="px-8 py-4 rounded-lg font-orbitron text-accent border-2 border-accent/60 bg-accent/5 hover:bg-accent/15 hover:shadow-glow transition-all duration-300"
+                  initial={{ opacity: 0, y: 10, filter: 'blur(6px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
+                  whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(0, 212, 255, 0.4)' }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Explore the Universe
+                </motion.button>
+              ) : (
+                <span className="inline-block min-h-[3.5rem]" aria-hidden />
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

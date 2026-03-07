@@ -1,12 +1,9 @@
-import { useAppStore } from '../store/useAppStore'
 import Home from './Home'
-import Console from './Console'
 
 /**
- * Root route: / shows Landing until "Explore the Universe", then Console (main app).
- * URL stays http://localhost:3000/
+ * / — Landing only: boot sequence and "Explore the Universe".
+ * Enter navigates to /explore (see Home handleEnter).
  */
 export default function MainRoute() {
-  const bootComplete = useAppStore((s) => s.bootComplete)
-  return bootComplete ? <Console /> : <Home />
+  return <Home />
 }

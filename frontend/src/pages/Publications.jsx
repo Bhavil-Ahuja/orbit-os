@@ -1,8 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, Plus, Pencil, Trash2, X } from 'lucide-react'
 import { contentService } from '../services/contentService'
 import { useMouseTilt } from '../hooks/useMouseTilt'
+import { useAppStore } from '../store/useAppStore'
+import { useIsAdmin } from '../hooks/useIsAdmin'
+import { adminApi } from '../api/adminApi'
+import { publicApi } from '../api/publicApi'
 import PublicationDetailModal from '../components/PublicationDetailModal/PublicationDetailModal'
 
 const CARD_SPRING = { type: 'spring', stiffness: 360, damping: 28 }
@@ -13,11 +18,25 @@ export default function Publications() {
   const [publications, setPublications] = useState([])
   const [archiveLoaded, setArchiveLoaded] = useState(false)
   const [selectedPublication, setSelectedPublication] = useState(null)
+  const [pubForm, setPubForm] = useState(null) // null | 'add' | publication (edit)
   const sectionRef = useRef(null)
   const inView = useInView(sectionRef, { once: true, amount: 0.2 })
+  const isAdmin = useIsAdmin()
+  const refetchBootstrap = useAppStore((s) => s.refetchBootstrap)
+
+  const refreshPublications = async () => {
+    try {
+      await refetchBootstrap()
+      const next = await contentService.getPublications()
+      setPublications(Array.isArray(next) ? next : [])
+    } catch (_) {
+      const next = await publicApi.getPublications().catch(() => [])
+      setPublications(Array.isArray(next) ? next : [])
+    }
+  }
 
   useEffect(() => {
-    contentService.getPublications().then(setPublications)
+    contentService.getPublications().then((next) => setPublications(Array.isArray(next) ? next : []))
   }, [])
 
   useEffect(() => {
@@ -25,6 +44,17 @@ export default function Publications() {
     const t = setTimeout(() => setArchiveLoaded(true), 1400)
     return () => clearTimeout(t)
   }, [inView])
+
+  const handleDelete = async (pub) => {
+    if (!isAdmin || !window.confirm(`Delete "${pub.title}"?`)) return
+    try {
+      await adminApi.deletePublication(pub.id)
+      await refreshPublications()
+      if (selectedPublication?.id === pub.id) setSelectedPublication(null)
+    } catch (e) {
+      window.alert(e?.message ?? 'Delete failed')
+    }
+  }
 
   return (
     <motion.div
@@ -88,12 +118,21 @@ export default function Publications() {
       )}
 
       <div className="relative">
-        <h1 className="font-orbitron text-2xl md:text-3xl text-accent mb-2">
-          Publications
-        </h1>
-        <p className="text-gray-400 font-exo text-base mb-6">
-          Research and written work
-        </p>
+        <div className="flex items-center justify-between gap-4 mb-2">
+          <div>
+            <h1 className="font-orbitron text-2xl md:text-3xl text-accent mb-2">
+              Publications
+            </h1>
+            <p className="text-gray-400 font-exo text-base mb-6">
+              Research and written work
+            </p>
+          </div>
+          {isAdmin && (
+            <button type="button" onClick={() => setPubForm('add')} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-accent/40 text-accent/90 font-orbitron text-sm hover:bg-accent/10 shrink-0">
+              <Plus size={14} /> Add
+            </button>
+          )}
+        </div>
 
         <div className="grid gap-4 grid-cols-1 w-full">
           {publications.map((pub, i) => (
@@ -103,6 +142,9 @@ export default function Publications() {
               index={i}
               inView={inView && archiveLoaded}
               onSelect={setSelectedPublication}
+              isAdmin={isAdmin}
+              onEdit={() => setPubForm(pub)}
+              onDelete={() => handleDelete(pub)}
             />
           ))}
         </div>
@@ -114,14 +156,27 @@ export default function Publications() {
             key="publication-detail"
             publication={selectedPublication}
             onClose={() => setSelectedPublication(null)}
+            isAdmin={isAdmin}
+            onEdit={() => { setSelectedPublication(null); setPubForm(selectedPublication) }}
+            onDelete={() => handleDelete(selectedPublication)}
           />
         ) : null}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {pubForm && (
+          <PublicationFormModal
+            publication={pubForm === 'add' ? null : pubForm}
+            onClose={() => setPubForm(null)}
+            onSaved={async () => { await refreshPublications(); setPubForm(null) }}
+          />
+        )}
       </AnimatePresence>
     </motion.div>
   )
 }
 
-function PublicationCard({ publication, index, inView, onSelect }) {
+function PublicationCard({ publication, index, inView, onSelect, isAdmin, onEdit, onDelete }) {
   const [hovered, setHovered] = useState(false)
   const { ref: tiltRef, style: tiltStyle, mousePos, handleMouseMove, handleMouseLeave } = useMouseTilt({
     maxTilt: 6,
@@ -135,6 +190,8 @@ function PublicationCard({ publication, index, inView, onSelect }) {
     handleMouseLeave()
   }
   const handleCardClick = () => onSelect?.(publication)
+  const handleEditClick = (e) => { e.stopPropagation(); onEdit?.() }
+  const handleDeleteClick = (e) => { e.stopPropagation(); onDelete?.() }
 
   return (
     <motion.div
@@ -220,23 +277,116 @@ function PublicationCard({ publication, index, inView, onSelect }) {
                 {description}
               </p>
             )}
-            {url && (
-              <motion.a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 font-exo text-sm transition-colors"
-                animate={{ opacity: hovered ? 1 : 0.85, color: hovered ? 'rgba(0, 212, 255, 1)' : 'rgba(0, 212, 255, 0.9)' }}
-                transition={{ duration: 0.25 }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <ExternalLink size={14} />
-                View publication
-              </motion.a>
-            )}
+            <div className="flex flex-wrap items-center gap-3" onClick={(e) => e.stopPropagation()}>
+              {url && (
+                <motion.a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 font-exo text-sm transition-colors"
+                  animate={{ opacity: hovered ? 1 : 0.85, color: hovered ? 'rgba(0, 212, 255, 1)' : 'rgba(0, 212, 255, 0.9)' }}
+                  transition={{ duration: 0.25 }}
+                >
+                  <ExternalLink size={14} />
+                  View publication
+                </motion.a>
+              )}
+              {isAdmin && (
+                <>
+                  <button type="button" onClick={handleEditClick} className="inline-flex items-center gap-1.5 text-gray-400 hover:text-accent font-exo text-sm"><Pencil size={14} /> Edit</button>
+                  <button type="button" onClick={handleDeleteClick} className="inline-flex items-center gap-1.5 text-red-400/80 hover:text-red-400 font-exo text-sm"><Trash2 size={14} /> Delete</button>
+                </>
+              )}
+            </div>
           </div>
         </motion.article>
       </motion.div>
     </motion.div>
   )
+}
+
+function PublicationFormModal({ publication, onClose, onSaved }) {
+  const isEdit = publication != null
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [form, setForm] = useState(() => ({
+    slug: publication?.slug ?? '',
+    title: publication?.title ?? '',
+    authors: publication?.authors ?? '',
+    venue: publication?.venue ?? '',
+    year: publication?.year ?? '',
+    url: publication?.url ?? '',
+    description: publication?.description ?? '',
+  }))
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    setError('')
+    try {
+      const payload = {
+        slug: form.slug.trim().toLowerCase().replace(/\s+/g, '-'),
+        title: form.title.trim(),
+        authors: form.authors.trim() || undefined,
+        venue: form.venue.trim() || undefined,
+        year: form.year.trim() || undefined,
+        url: form.url.trim() || undefined,
+        description: form.description.trim() || undefined,
+      }
+      if (isEdit) {
+        await adminApi.updatePublication(publication.id, payload)
+      } else {
+        await adminApi.createPublication(payload)
+      }
+      await onSaved()
+    } catch (e) {
+      setError(e?.message ?? 'Save failed')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const modal = (
+    <motion.div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={() => !saving && onClose()}
+      aria-modal="true"
+      role="dialog"
+    >
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" aria-hidden />
+      <motion.div
+        className="relative rounded-xl border border-glass-border bg-panel-bg/98 backdrop-blur-md w-full max-w-lg max-h-[90vh] flex flex-col my-auto shrink-0"
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.96 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0 bg-panel-bg/98">
+          <span className="font-orbitron text-accent">{isEdit ? 'Edit publication' : 'Add publication'}</span>
+          <button type="button" onClick={onClose} disabled={saving} className="p-1.5 rounded text-gray-400 hover:text-white" aria-label="Close"><X size={18} /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-4 space-y-3 overflow-y-auto min-h-0 flex-1">
+          {['title', 'slug', 'authors', 'venue', 'year', 'url'].map((key) => (
+            <div key={key}>
+              <label className="block text-xs text-gray-500 font-orbitron mb-1 capitalize">{key}</label>
+              <input type={key === 'url' ? 'url' : 'text'} value={form[key]} onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))} className="w-full px-3 py-2 rounded-lg bg-void/80 border border-glass-border text-white font-space text-sm focus:border-accent/50 focus:outline-none" required={key === 'title' || key === 'slug'} />
+            </div>
+          ))}
+          <div>
+            <label className="block text-xs text-gray-500 font-orbitron mb-1">Description</label>
+            <textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={3} className="w-full px-3 py-2 rounded-lg bg-void/80 border border-glass-border text-white font-space text-sm focus:border-accent/50 focus:outline-none resize-y" />
+          </div>
+          {error && <p className="text-red-400 text-xs">{error}</p>}
+          <div className="flex gap-2 pt-2">
+            <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg bg-accent/20 text-accent font-orbitron text-sm hover:bg-accent/30 disabled:opacity-50">{saving ? 'Saving…' : (isEdit ? 'Save' : 'Create')}</button>
+            <button type="button" onClick={onClose} disabled={saving} className="px-4 py-2 rounded-lg border border-glass-border text-gray-400 font-orbitron text-sm hover:text-white">Cancel</button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
+  )
+  return createPortal(modal, document.body)
 }

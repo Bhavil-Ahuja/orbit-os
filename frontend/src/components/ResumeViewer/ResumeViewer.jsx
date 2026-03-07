@@ -1,9 +1,21 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { motion, AnimatePresence, useInView } from 'framer-motion'
 import { Maximize2, Download, Eye, FileText, Terminal, X } from 'lucide-react'
 import { contentService } from '../../services/contentService'
+import { getApiBase } from '../../api/client'
 
 const DOSSIER_FILENAME = 'BHAVIL_AHUJA.RES'
+
+/** Treat example.com and other placeholders as "not configured" so we don't trigger 404 iframes. */
+function isPlaceholderResumeUrl(url) {
+  if (!url || typeof url !== 'string') return true
+  try {
+    const host = new URL(url).hostname.toLowerCase()
+    return host === 'example.com' || host === 'example.org'
+  } catch {
+    return true
+  }
+}
 const BOOT_LINES = [
   '> Accessing personnel archive...',
   '> Verifying credentials...',
@@ -149,8 +161,14 @@ export default function ResumeViewer() {
       .finally(() => setLoading(false))
   }, [])
 
+  // PDF URL with filename so the browser viewer shows "Bhavil_Ahuja_Resume.pdf" instead of "resume-file"
+  const iframePdfUrl = useMemo(
+    () => `${getApiBase()}/Bhavil_Ahuja_Resume.pdf`,
+    []
+  )
+
   const showBootLog = inView && !bootDone
-  const hasResume = resume?.viewUrl
+  const hasResume = resume?.viewUrl && !isPlaceholderResumeUrl(resume.viewUrl)
 
   if (loading && !resume) {
     return (
@@ -299,8 +317,8 @@ export default function ResumeViewer() {
           />
         </div>
 
-        {/* Content area: boot log or dossier/terminal */}
-        <div className="relative w-full aspect-[8/10.5] max-h-[60vh] bg-black/60 min-h-[280px]">
+        {/* Content area: boot log or dossier/terminal. Single scroll context to avoid nested scroll issues. */}
+        <div className="relative w-full aspect-[8/10.5] max-h-[80vh] bg-black/60 min-h-[380px] flex flex-col min-h-0">
           <AnimatePresence mode="wait">
             {showBootLog ? (
               <motion.div
@@ -315,23 +333,26 @@ export default function ResumeViewer() {
             ) : (
               <motion.div
                 key="content"
-                className="absolute inset-0"
+                className="absolute inset-0 flex flex-col min-h-0"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5, ease: 'easeOut' }}
               >
                 {viewMode === 'terminal' ? (
-                  <div className="h-full bg-black/40">
+                  <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-black/40 overscroll-contain">
                     <TerminalView data={resume.terminalData} />
                   </div>
                 ) : (
-                  <div className="relative w-full h-full overflow-hidden">
+                  <div className="relative flex-1 min-h-0 overflow-hidden">
                     <Watermark />
                     <iframe
-                      src={resume.viewUrl}
+                      src={iframePdfUrl}
                       title="Resume"
                       className="w-full h-full border-0 block relative z-[1]"
-                      style={{ filter: 'brightness(0.82) contrast(1.05)' }}
+                      style={{
+                        filter: 'brightness(0.82) contrast(1.05)',
+                        minHeight: '100%',
+                      }}
                     />
                     <div
                       className="absolute inset-0 pointer-events-none z-[2]"
@@ -371,7 +392,7 @@ export default function ResumeViewer() {
             onClick={() => setFullscreen(false)}
           >
             <motion.div
-              className="relative z-10 w-full max-w-4xl h-[90vh] rounded-xl overflow-hidden"
+              className="relative z-10 w-full max-w-4xl h-[90vh] rounded-xl overflow-hidden flex flex-col min-h-0"
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
@@ -382,10 +403,10 @@ export default function ResumeViewer() {
                   '0 0 0 1px rgba(0,212,255,0.25), 0 0 60px rgba(0,212,255,0.12), inset 0 1px 0 0 rgba(255,255,255,0.04)',
               }}
             >
-              <div className="absolute inset-0 bg-black/40">
+              <div className="absolute inset-0 bg-black/40 overflow-hidden">
                 <Watermark />
                 <iframe
-                  src={resume.viewUrl}
+                  src={iframePdfUrl}
                   title="Resume Fullscreen"
                   className="w-full h-full border-0 block relative z-0"
                   style={{ filter: 'brightness(0.82) contrast(1.05)' }}

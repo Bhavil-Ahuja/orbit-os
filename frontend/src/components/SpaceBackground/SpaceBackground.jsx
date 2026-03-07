@@ -123,6 +123,7 @@ export default function SpaceBackground() {
   const focusY = SECTION_FOCUS_OFFSET[activeSection] ?? 0
   const [nebulaX, nebulaY] = (bootComplete && SECTION_NEBULA_OFFSET[activeSection]) ? SECTION_NEBULA_OFFSET[activeSection] : [0, 0]
   const [experienceDrift, setExperienceDrift] = useState(false)
+  const [webglContextLost, setWebglContextLost] = useState(false)
   const prevSectionRef = useRef(activeSection)
 
   useEffect(() => {
@@ -182,9 +183,18 @@ export default function SpaceBackground() {
         }}
       />
       {/* Starfield + canvas: slight drift when entering Experience section (~5px, starts before content) */}
+      {webglContextLost && (
+        <div
+          className="absolute inset-0 bg-void"
+          aria-hidden
+          style={{
+            background: 'radial-gradient(ellipse 80% 60% at 50% 40%, rgba(15,15,25,0.95) 0%, rgba(8,8,12,0.98) 100%)',
+          }}
+        />
+      )}
       <motion.div
         className="absolute inset-0"
-        style={{ willChange: 'transform' }}
+        style={{ willChange: 'transform', visibility: webglContextLost ? 'hidden' : 'visible' }}
         animate={{ y: experienceDrift ? [0, 5, 0] : 0 }}
         transition={{
           duration: 0.28,
@@ -195,7 +205,24 @@ export default function SpaceBackground() {
         <Canvas
           dpr={[1, 1.5]}
           camera={{ position: [0, 0, 20], fov: 60 }}
-          gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+          gl={{
+            antialias: true,
+            alpha: true,
+            powerPreference: 'high-performance',
+            failIfMajorPerformanceCaveat: false,
+          }}
+          onCreated={({ gl }) => {
+            const canvas = gl.domElement
+            canvas.addEventListener(
+              'webglcontextlost',
+              (e) => {
+                e.preventDefault()
+                setWebglContextLost(true)
+              },
+              false
+            )
+            canvas.addEventListener('webglcontextrestored', () => setWebglContextLost(false), false)
+          }}
         >
           <Suspense fallback={null}>
             <DepthFog />

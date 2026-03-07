@@ -26,10 +26,18 @@ spring:
     open-in-view: false
 
 # Single-user admin auth. Set ADMIN_USERNAME, ADMIN_PASSWORD_HASH (BCrypt), ADMIN_JWT_SECRET in production.
+# Dev: username=admin. For password either use BCrypt hash below, or set ADMIN_PASSWORD=password (plain-text, dev only).
+# Cloudinary: set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET (or in profile)
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+  api-key: ${CLOUDINARY_API_KEY:}
+  api-secret: ${CLOUDINARY_API_SECRET:}
+
 admin:
   auth:
     username: ${ADMIN_USERNAME:admin}
     passwordHash: ${ADMIN_PASSWORD_HASH:$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy}
+    plainPassword: ${ADMIN_PASSWORD:}
     jwtSecret: ${ADMIN_JWT_SECRET:dev-secret-min-32-bytes-for-hs256-please-set-in-prod}
     jwtExpirationSeconds: ${ADMIN_JWT_EXPIRATION_SECONDS:86400}
 

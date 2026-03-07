@@ -1,12 +1,28 @@
 # Run without PostgreSQL: ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+# Secrets: copy backend/.env.example to backend/.env and fill in (backend/.env is gitignored)
 spring:
+  config:
+    import: optional:file:.env[.properties]
   datasource:
     url: jdbc:h2:mem:portfolio;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password:
     driver-class-name: org.h2.Driver
   jpa:
-    show-sql: true
     hibernate:
       ddl-auto: create
     database-platform: com.orbitos.portfolio.config.H2TextDialect
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+  api-key: ${CLOUDINARY_API_KEY:}
+  api-secret: ${CLOUDINARY_API_SECRET:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,mappings  # debug: GET /actuator/mappings lists all routes
+admin:
+  auth:
+    plainPassword: password  # dev only: login with admin / password

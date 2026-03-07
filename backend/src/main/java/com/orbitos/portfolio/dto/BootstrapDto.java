@@ -22,5 +22,6 @@ public class BootstrapDto {
     private NavigationDto navigation;
     private PortfolioDto portfolio;
     private List<CategoryOrbitDto> skillsOrbit;
+    private ResumeDto resume;
     private ResumeTerminalDto resumeTerminal;
 }

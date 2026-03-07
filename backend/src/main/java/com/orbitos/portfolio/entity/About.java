@@ -11,18 +11,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Immutable;
 
 import java.time.Instant;
 
 /**
- * Singleton about (profile/bio). One row in DB.
- * {@link Immutable} ensures the public layer never triggers accidental UPDATEs; admin updates
- * use repository save (or native update) as intended.
+ * Singleton about (profile/bio). One row in DB. Updated by admin PATCH.
  */
 @Entity
 @Table(name = "about")
-@Immutable
 @Getter
 @Setter
 @Builder

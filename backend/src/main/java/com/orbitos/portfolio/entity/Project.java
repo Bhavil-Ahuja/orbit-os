@@ -76,27 +76,27 @@ public class Project {
     @Builder.Default
     private ProjectState state = ProjectState.PUBLISHED;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "text")
     @Type(ListStringJsonType.class)
     @Builder.Default
     private List<String> impact = new ArrayList<>();
 
-    @Column(name = "design_decisions", nullable = false)
+    @Column(name = "design_decisions", nullable = false, columnDefinition = "text")
     @Type(ListStringJsonType.class)
     @Builder.Default
     private List<String> designDecisions = new ArrayList<>();
 
-    @Column(name = "technical_challenges", nullable = false)
+    @Column(name = "technical_challenges", nullable = false, columnDefinition = "text")
     @Type(ListStringJsonType.class)
     @Builder.Default
     private List<String> technicalChallenges = new ArrayList<>();
 
-    @Column(name = "tech_stack", nullable = false)
+    @Column(name = "tech_stack", nullable = false, columnDefinition = "text")
     @Type(ListStringJsonType.class)
     @Builder.Default
     private List<String> techStack = new ArrayList<>();
 
-    @Column(name = "screenshots", nullable = false)
+    @Column(name = "screenshots", nullable = false, columnDefinition = "text")
     @Type(ListStringJsonType.class)
     @Builder.Default
     private List<String> screenshots = new ArrayList<>();

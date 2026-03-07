@@ -3,7 +3,6 @@ package com.orbitos.portfolio.converter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.orbitos.portfolio.config.JsonColumnDefinitionHolder;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.usertype.UserType;
 
@@ -17,8 +16,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Hibernate UserType for List&lt;String&gt; stored as JSON.
- * Uses TEXT in H2 and JSONB in PostgreSQL (via {@link JsonColumnDefinitionHolder}).
+ * Hibernate UserType for List&lt;String&gt; stored as JSON in a TEXT column.
+ * Uses LONGVARCHAR so PostgreSQL creates TEXT (CLOB maps to oid and rejects string bind).
  */
 public class ListStringJsonType implements UserType<List<String>> {
 
@@ -27,9 +26,7 @@ public class ListStringJsonType implements UserType<List<String>> {
 
     @Override
     public int getSqlType() {
-        return "jsonb".equalsIgnoreCase(JsonColumnDefinitionHolder.getColumnDefinition())
-                ? Types.OTHER
-                : Types.CLOB;
+        return Types.LONGVARCHAR;
     }
 
     @Override

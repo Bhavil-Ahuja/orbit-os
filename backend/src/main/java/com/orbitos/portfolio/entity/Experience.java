@@ -47,7 +47,7 @@ public class Experience {
     @Column(nullable = false, length = 80)
     private String period;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "text")
     @Type(ListStringJsonType.class)
     @Builder.Default
     private List<String> impact = new ArrayList<>();

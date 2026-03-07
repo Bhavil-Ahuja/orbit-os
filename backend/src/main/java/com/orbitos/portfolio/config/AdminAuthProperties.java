@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Single-user admin auth. Credentials from environment variables.
- * Password must be stored as BCrypt hash.
+ * Password: BCrypt hash (ADMIN_PASSWORD_HASH), or for dev only set ADMIN_PASSWORD=password for plain-text.
  */
 @Component
 @ConfigurationProperties(prefix = "admin.auth")
@@ -14,6 +14,8 @@ public class AdminAuthProperties {
 
     private String username;
     private String passwordHash;
+    /** Optional: plain-text password for dev. If set, login accepts this instead of BCrypt (dev only). */
+    private String plainPassword;
     private String jwtSecret;
     private long jwtExpirationSeconds = 86400;
 
@@ -31,6 +33,14 @@ public class AdminAuthProperties {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public String getPlainPassword() {
+        return plainPassword;
+    }
+
+    public void setPlainPassword(String plainPassword) {
+        this.plainPassword = plainPassword;
     }
 
     public String getJwtSecret() {

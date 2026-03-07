@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Check } from 'lucide-react'
+import { publicApi } from '../../api/publicApi'
 
 const PROGRESS_LINES = [
   '> Establishing uplink...',
@@ -16,31 +17,43 @@ export default function ContactCard() {
   const [sending, setSending] = useState(false)
   const [progressStep, setProgressStep] = useState(0)
   const [sent, setSent] = useState(false)
+  const [showProgress, setShowProgress] = useState(false)
   const [buttonHover, setButtonHover] = useState(false)
   const [showSuccessGlow, setShowSuccessGlow] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!sending) return
+    if (!showProgress) return
     const steps = PROGRESS_LINES.length
     const ids = []
     for (let i = 0; i < steps; i++) {
-      ids.push(setTimeout(() => setProgressStep(i + 1), (i + 1) * LINE_DELAY_MS))
+      ids.push(setTimeout(() => setProgressStep((p) => p + 1), (i + 1) * LINE_DELAY_MS))
     }
     ids.push(
       setTimeout(() => {
-        setSending(false)
+        setShowProgress(false)
         setSent(true)
         setShowSuccessGlow(true)
         setForm({ name: '', email: '', message: '' })
+        setProgressStep(0)
       }, steps * LINE_DELAY_MS + 400)
     )
     return () => ids.forEach(clearTimeout)
-  }, [sending])
+  }, [showProgress])
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setProgressStep(0)
+    setError('')
     setSending(true)
+    try {
+      await publicApi.submitContact({ name: form.name.trim(), email: form.email.trim(), message: form.message.trim() })
+      setProgressStep(0)
+      setShowProgress(true)
+    } catch (err) {
+      setError(err.message || 'Transmission failed. Try again.')
+    } finally {
+      setSending(false)
+    }
   }
 
   const handleChange = (e) => {
@@ -94,7 +107,9 @@ export default function ContactCard() {
           </motion.div>
         ) : (
           <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            {sending ? (
+            {sending && !showProgress ? (
+              <div className="font-space text-sm text-accent/90 py-2">Establishing uplink...</div>
+            ) : showProgress ? (
               <div className="font-space text-sm space-y-2 py-2">
                 {PROGRESS_LINES.map((line, i) => (
                   <motion.div
@@ -110,6 +125,9 @@ export default function ContactCard() {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
+                {error && (
+                  <p className="text-red-400/90 text-sm font-space">{error}</p>
+                )}
                 <div>
                   <label htmlFor="contact-name" className="block text-xs text-gray-500 font-orbitron mb-1">
                     Name
@@ -157,7 +175,7 @@ export default function ContactCard() {
                 </div>
                 <motion.button
                   type="submit"
-                  disabled={sending}
+                  disabled={sending || showProgress}
                   className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-accent/15 border border-accent/40 text-accent font-orbitron text-sm hover:bg-accent/25 disabled:opacity-70 transition-colors"
                   whileHover={!sending ? { scale: 1.02 } : {}}
                   whileTap={!sending ? { scale: 0.98 } : {}}

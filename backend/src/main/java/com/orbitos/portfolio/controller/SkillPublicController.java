@@ -1,5 +1,6 @@
 package com.orbitos.portfolio.controller;
 
+import com.orbitos.portfolio.dto.SkillCategoryDto;
 import com.orbitos.portfolio.dto.SkillDto;
 import com.orbitos.portfolio.service.SkillService;
 import org.springframework.http.ResponseEntity;
@@ -22,5 +23,10 @@ public class SkillPublicController {
     @GetMapping
     public ResponseEntity<List<SkillDto>> list() {
         return ResponseEntity.ok(skillService.findAll());
+    }
+
+    @GetMapping("/categories")
+    public ResponseEntity<List<SkillCategoryDto>> listCategories() {
+        return ResponseEntity.ok(skillService.findAllCategories());
     }
 }

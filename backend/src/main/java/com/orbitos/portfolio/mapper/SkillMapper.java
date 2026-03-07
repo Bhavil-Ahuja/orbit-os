@@ -12,6 +12,7 @@ import java.util.List;
 public interface SkillMapper {
 
     @Mapping(target = "category", source = "category.name")
+    @Mapping(target = "categoryId", source = "category.id")
     SkillDto toDto(Skill entity);
 
     List<SkillDto> toDtoList(List<Skill> entities);

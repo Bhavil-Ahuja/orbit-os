@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppStore } from '../../store/useAppStore'
+import { useIsAdmin } from '../../hooks/useIsAdmin'
 import { scrollToSection } from '../../hooks/useScrollSection'
 
 const sections = [
@@ -156,6 +158,7 @@ function NavItem({ id, label, isActive }) {
 
 export default function Navbar() {
   const activeSection = useAppStore((s) => s.activeSection)
+  const isAdmin = useIsAdmin()
 
   return (
     <nav
@@ -163,6 +166,14 @@ export default function Navbar() {
       role="navigation"
       aria-label="Main"
     >
+      {isAdmin && (
+        <Link
+          to="/whoami"
+          className="px-3 py-1.5 rounded-lg border border-accent/50 bg-accent/10 text-accent font-orbitron text-xs text-center hover:bg-accent/20 transition-colors mb-1"
+        >
+          Admin
+        </Link>
+      )}
       {sections.map(({ id, label }) => (
         <NavItem
           key={id}

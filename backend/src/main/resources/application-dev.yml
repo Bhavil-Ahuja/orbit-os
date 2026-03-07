@@ -1,13 +1,21 @@
-# Local development overrides
+# Dev profile: PostgreSQL, validate schema.
+# Start DB: docker compose up -d  (from repo root)
+# Run app: ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+# Optional: copy backend/.env.example to backend/.env for Cloudinary etc.
 spring:
+  config:
+    import: optional:file:.env[.properties]
   datasource:
     url: jdbc:postgresql://localhost:5432/portfolio
     username: postgres
     password: postgres
   jpa:
-    show-sql: true
     hibernate:
       ddl-auto: validate
+
+admin:
+  auth:
+    plainPassword: password  # dev only: login with admin / password
 
 logging:
   level:

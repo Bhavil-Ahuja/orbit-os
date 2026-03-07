@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Github, ExternalLink } from 'lucide-react'
+import { X, Github, ExternalLink, Pencil, Trash2 } from 'lucide-react'
 
-export default function ProjectDetailModal({ project, onClose }) {
+export default function ProjectDetailModal({ project, onClose, isAdmin, onEdit, onDelete }) {
   useEffect(() => {
     if (!project) return
     const handleEscape = (e) => { if (e.key === 'Escape') onClose() }
@@ -17,10 +18,10 @@ export default function ProjectDetailModal({ project, onClose }) {
   const technicalChallenges = Array.isArray(project.technicalChallenges) ? project.technicalChallenges : []
   const screenshots = Array.isArray(project.screenshots) ? project.screenshots : []
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -35,14 +36,14 @@ export default function ProjectDetailModal({ project, onClose }) {
           aria-hidden
         />
         <motion.div
-          className="relative rounded-2xl border border-glass-border bg-panel-bg/98 backdrop-blur-md shadow-panel w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"
+          className="relative rounded-2xl border border-glass-border bg-panel-bg/98 backdrop-blur-md shadow-panel w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col my-auto shrink-0"
           initial={{ opacity: 0, scale: 0.96, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 12 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 flex-shrink-0">
+          <div className="flex items-center justify-between gap-2 px-6 py-4 border-b border-white/10 flex-shrink-0 flex-wrap">
             <h2
               id="project-detail-title"
               className="font-orbitron text-xl text-accent"
@@ -50,14 +51,26 @@ export default function ProjectDetailModal({ project, onClose }) {
             >
               {project.title}
             </h2>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-              aria-label="Close"
-            >
-              <X size={20} />
-            </button>
+            <div className="flex items-center gap-1">
+              {isAdmin && (
+                <>
+                  <button type="button" onClick={onEdit} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-accent/40 text-accent/90 font-orbitron text-xs hover:bg-accent/10">
+                    <Pencil size={12} /> Edit
+                  </button>
+                  <button type="button" onClick={onDelete} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-red-500/40 text-red-400/90 font-orbitron text-xs hover:bg-red-500/10">
+                    <Trash2 size={12} /> Delete
+                  </button>
+                </>
+              )}
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                aria-label="Close"
+              >
+                <X size={20} />
+              </button>
+            </div>
           </div>
 
           <div className="overflow-y-auto flex-1 p-6 space-y-5">
@@ -153,6 +166,7 @@ export default function ProjectDetailModal({ project, onClose }) {
           </div>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }

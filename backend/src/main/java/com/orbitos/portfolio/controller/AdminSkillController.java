@@ -29,6 +29,12 @@ public class AdminSkillController {
         this.cacheEvictionService = cacheEvictionService;
     }
 
+    @PostMapping("/categories/seed")
+    public ResponseEntity<Void> seedCategories() {
+        skillService.seedCategoriesIfEmpty();
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping
     public ResponseEntity<Map<String, Long>> create(@Valid @RequestBody CreateSkillRequestDto request) {
         Long id = skillService.createSkill(request);

@@ -103,7 +103,7 @@ Simple health check.
 
 **GET** `/api/public/bootstrap`
 
-Returns the entire site payload in one request (navigation, portfolio, skills orbit, resume terminal). Frontend can load the site with a single call.
+Returns the entire site payload in one request (navigation, portfolio, skills orbit, resume, resume terminal). Frontend loads the site with a single call; no separate resume request.
 
 **Response:** `200 OK`
 
@@ -118,11 +118,12 @@ Returns the entire site payload in one request (navigation, portfolio, skills or
     "publications": []
   },
   "skillsOrbit": [],
+  "resume": { "viewUrl": "...", "downloadUrl": "...", "terminalData": {}, "updatedAt": "..." },
   "resumeTerminal": { "name": "", "title": "", "sections": [] }
 }
 ```
 
-**Service:** `BootstrapReadService` (delegates to NavigationReadService, PortfolioReadService, SkillOrbitReadService, ResumeTerminalReadService).
+**Service:** `BootstrapReadService` (delegates to NavigationReadService, PortfolioReadService, SkillOrbitReadService, ResumeService, ResumeTerminalReadService).
 
 ---
 

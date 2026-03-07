@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ExternalLink } from 'lucide-react'
+import { X, ExternalLink, Pencil, Trash2 } from 'lucide-react'
 
-export default function PublicationDetailModal({ publication, onClose }) {
+export default function PublicationDetailModal({ publication, onClose, isAdmin, onEdit, onDelete }) {
   useEffect(() => {
     if (!publication) return
     const handleEscape = (e) => { if (e.key === 'Escape') onClose() }
@@ -14,10 +15,10 @@ export default function PublicationDetailModal({ publication, onClose }) {
 
   const { title, authors, venue, year, url, description } = publication
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -32,7 +33,7 @@ export default function PublicationDetailModal({ publication, onClose }) {
           aria-hidden
         />
         <motion.div
-          className="relative rounded-2xl border border-white/10 bg-black/90 backdrop-blur-md w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"
+          className="relative rounded-2xl border border-white/10 bg-black/90 backdrop-blur-md w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col my-auto shrink-0"
           style={{ boxShadow: '0 0 0 1px rgba(0,212,255,0.15), 0 24px 48px -12px rgba(0,0,0,0.5)' }}
           initial={{ opacity: 0, scale: 0.96, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -40,7 +41,7 @@ export default function PublicationDetailModal({ publication, onClose }) {
           transition={{ duration: 0.25, ease: 'easeOut' }}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 flex-shrink-0">
+          <div className="flex items-center justify-between gap-2 px-6 py-4 border-b border-white/10 flex-shrink-0 flex-wrap">
             <h2
               id="publication-detail-title"
               className="font-orbitron text-xl text-accent"
@@ -48,14 +49,26 @@ export default function PublicationDetailModal({ publication, onClose }) {
             >
               {title}
             </h2>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-              aria-label="Close"
-            >
-              <X size={20} />
-            </button>
+            <div className="flex items-center gap-1">
+              {isAdmin && (
+                <>
+                  <button type="button" onClick={onEdit} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-accent/40 text-accent/90 font-orbitron text-xs hover:bg-accent/10">
+                    <Pencil size={12} /> Edit
+                  </button>
+                  <button type="button" onClick={onDelete} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-red-500/40 text-red-400/90 font-orbitron text-xs hover:bg-red-500/10">
+                    <Trash2 size={12} /> Delete
+                  </button>
+                </>
+              )}
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                aria-label="Close"
+              >
+                <X size={20} />
+              </button>
+            </div>
           </div>
 
           <div className="overflow-y-auto flex-1 p-6 space-y-5">
@@ -102,6 +115,7 @@ export default function PublicationDetailModal({ publication, onClose }) {
           </div>
         </motion.div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }

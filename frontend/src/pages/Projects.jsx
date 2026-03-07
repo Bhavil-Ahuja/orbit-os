@@ -1,19 +1,39 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { Github, ExternalLink } from 'lucide-react'
+import { Github, ExternalLink, Plus, Pencil, Trash2, X } from 'lucide-react'
 import { contentService } from '../services/contentService'
 import { useMouseTilt } from '../hooks/useMouseTilt'
+import { useAppStore } from '../store/useAppStore'
+import { useIsAdmin } from '../hooks/useIsAdmin'
+import { adminApi } from '../api/adminApi'
+import { publicApi } from '../api/publicApi'
 import ProjectDetailModal from '../components/ProjectDetailModal/ProjectDetailModal'
 
 export default function Projects() {
   const [projects, setProjects] = useState([])
   const [modulesLoaded, setModulesLoaded] = useState(false)
   const [selectedProject, setSelectedProject] = useState(null)
+  const [projectForm, setProjectForm] = useState(null) // null | 'add' | project (edit)
   const sectionRef = useRef(null)
   const inView = useInView(sectionRef, { once: true, amount: 0.2 })
 
+  const isAdmin = useIsAdmin()
+  const refetchBootstrap = useAppStore((s) => s.refetchBootstrap)
+
+  const refreshProjects = async () => {
+    try {
+      await refetchBootstrap()
+      const next = await contentService.getProjects()
+      setProjects(Array.isArray(next) ? next : [])
+    } catch (_) {
+      const next = await publicApi.getProjects().catch(() => [])
+      setProjects(Array.isArray(next) ? next : [])
+    }
+  }
+
   useEffect(() => {
-    contentService.getProjects().then(setProjects)
+    contentService.getProjects().then((next) => setProjects(Array.isArray(next) ? next : []))
   }, [])
 
   useEffect(() => {
@@ -21,6 +41,17 @@ export default function Projects() {
     const t = setTimeout(() => setModulesLoaded(true), 1400)
     return () => clearTimeout(t)
   }, [inView])
+
+  const handleDelete = async (project) => {
+    if (!isAdmin || !window.confirm(`Delete "${project.title}"?`)) return
+    try {
+      await adminApi.deleteProject(project.id)
+      await refreshProjects()
+      if (selectedProject?.id === project.id) setSelectedProject(null)
+    } catch (e) {
+      window.alert(e?.message ?? 'Delete failed')
+    }
+  }
 
   return (
     <motion.div
@@ -84,12 +115,25 @@ export default function Projects() {
       )}
 
       <div className="relative">
-        <h1 className="font-orbitron text-2xl md:text-3xl text-accent mb-2">
-          Projects
-        </h1>
-        <p className="text-gray-400 font-exo text-base mb-6">
-          Mission modules
-        </p>
+        <div className="flex items-center justify-between gap-4 mb-2">
+          <div>
+            <h1 className="font-orbitron text-2xl md:text-3xl text-accent mb-2">
+              Projects
+            </h1>
+            <p className="text-gray-400 font-exo text-base mb-6">
+              Mission modules
+            </p>
+          </div>
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => setProjectForm('add')}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-accent/40 text-accent/90 font-orbitron text-sm hover:bg-accent/10 transition-colors shrink-0"
+            >
+              <Plus size={16} /> Add project
+            </button>
+          )}
+        </div>
 
         <div className="grid gap-4 md:grid-cols-2 items-stretch">
           {projects.map((project, i) => (
@@ -99,6 +143,9 @@ export default function Projects() {
               index={i}
               inView={inView && modulesLoaded}
               onSelect={setSelectedProject}
+              isAdmin={isAdmin}
+              onEdit={() => setProjectForm(project)}
+              onDelete={() => handleDelete(project)}
             />
           ))}
         </div>
@@ -109,6 +156,19 @@ export default function Projects() {
           <ProjectDetailModal
             project={selectedProject}
             onClose={() => setSelectedProject(null)}
+            isAdmin={isAdmin}
+            onEdit={() => { setSelectedProject(null); setProjectForm(selectedProject) }}
+            onDelete={() => handleDelete(selectedProject)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {projectForm && (
+          <ProjectFormModal
+            project={projectForm === 'add' ? null : projectForm}
+            onClose={() => setProjectForm(null)}
+            onSaved={async () => { await refreshProjects(); setProjectForm(null) }}
           />
         )}
       </AnimatePresence>
@@ -116,7 +176,7 @@ export default function Projects() {
   )
 }
 
-function ProjectCard({ project, index, inView, onSelect }) {
+function ProjectCard({ project, index, inView, onSelect, isAdmin, onEdit, onDelete }) {
   const [hovered, setHovered] = useState(false)
   const { ref: tiltRef, style: tiltStyle, mousePos, handleMouseMove, handleMouseLeave } = useMouseTilt({
     maxTilt: 6,
@@ -130,6 +190,8 @@ function ProjectCard({ project, index, inView, onSelect }) {
     handleMouseLeave()
   }
   const handleCardClick = () => onSelect?.(project)
+  const handleEditClick = (e) => { e.stopPropagation(); onEdit?.() }
+  const handleDeleteClick = (e) => { e.stopPropagation(); onDelete?.() }
 
   const hasSystemMeta = project.status != null || project.type != null || project.role != null || project.scale != null
   const hasImpactFirst = project.missionObjective != null && Array.isArray(project.impact) && project.impact.length > 0
@@ -289,7 +351,7 @@ function ProjectCard({ project, index, inView, onSelect }) {
                 </motion.span>
               ))}
             </div>
-            <div className="flex gap-4 mt-2.5" onClick={(e) => e.stopPropagation()}>
+            <div className="flex flex-wrap items-center gap-4 mt-2.5" onClick={(e) => e.stopPropagation()}>
               <a
                 href={project.githubUrl}
                 target="_blank"
@@ -306,10 +368,173 @@ function ProjectCard({ project, index, inView, onSelect }) {
               >
                 <ExternalLink size={16} /> Live demo
               </a>
+              {isAdmin && (
+                <>
+                  <button type="button" onClick={handleEditClick} className="inline-flex items-center gap-1.5 text-gray-400 hover:text-accent font-exo text-sm transition-colors">
+                    <Pencil size={14} /> Edit
+                  </button>
+                  <button type="button" onClick={handleDeleteClick} className="inline-flex items-center gap-1.5 text-red-400/80 hover:text-red-400 font-exo text-sm transition-colors">
+                    <Trash2 size={14} /> Delete
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </motion.div>
       </motion.div>
     </motion.div>
   )
+}
+
+const PROJECT_STATUS_OPTIONS = ['OPERATIONAL', 'COMPLETED', 'ARCHIVED', 'PROTOTYPE']
+const PROJECT_TYPE_OPTIONS = ['Personal', 'Console / Portfolio', 'Commerce', 'Internal Tooling', 'Open Source', 'Other']
+
+const inputClass = 'w-full px-3 py-2 rounded-lg bg-void/80 border border-glass-border text-white font-space text-sm focus:border-accent/50 focus:outline-none'
+const labelClass = 'block text-xs text-gray-500 font-orbitron mb-1'
+
+function ProjectFormModal({ project, onClose, onSaved }) {
+  const isEdit = project != null
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [form, setForm] = useState(() => ({
+    title: project?.title ?? '',
+    slug: project?.slug ?? '',
+    status: project?.status ?? 'DRAFT',
+    type: project?.type ?? 'Personal',
+    role: project?.role ?? '',
+    scale: project?.scale ?? '',
+    missionObjective: project?.missionObjective ?? '',
+    impact: Array.isArray(project?.impact) ? project.impact.join('\n') : '',
+    techStack: Array.isArray(project?.techStack) ? project.techStack.join(', ') : '',
+    githubUrl: project?.githubUrl ?? '',
+    liveUrl: project?.liveUrl ?? '',
+  }))
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    setError('')
+    try {
+      const payload = {
+        title: form.title.trim(),
+        slug: form.slug.trim().toLowerCase().replace(/\s+/g, '-'),
+        status: form.status.trim() || undefined,
+        type: form.type.trim(),
+        role: form.role.trim(),
+        scale: form.scale.trim(),
+        missionObjective: form.missionObjective.trim(),
+        impact: form.impact.split(/\n/).map((s) => s.trim()).filter(Boolean),
+        techStack: form.techStack.split(/[,;]/).map((s) => s.trim()).filter(Boolean),
+        githubUrl: form.githubUrl.trim() || undefined,
+        liveUrl: form.liveUrl.trim() || undefined,
+      }
+      if (isEdit) {
+        await adminApi.updateProject(project.id, payload)
+      } else {
+        await adminApi.createProject(payload)
+      }
+      await onSaved()
+    } catch (e) {
+      setError(e?.message ?? 'Save failed')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const modal = (
+    <motion.div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={() => !saving && onClose()}
+      aria-modal="true"
+      role="dialog"
+    >
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" aria-hidden />
+      <motion.div
+        className="relative rounded-xl border border-glass-border bg-panel-bg/98 backdrop-blur-md w-full max-w-lg max-h-[90vh] flex flex-col my-auto shrink-0"
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.96 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0 bg-panel-bg/98">
+          <span className="font-orbitron text-accent">{isEdit ? 'Edit project' : 'Add project'}</span>
+          <button type="button" onClick={onClose} disabled={saving} className="p-1.5 rounded text-gray-400 hover:text-white" aria-label="Close">
+            <X size={18} />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-4 space-y-3 overflow-y-auto min-h-0 flex-1">
+          <div>
+            <label className={labelClass}>Title</label>
+            <input type="text" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} className={inputClass} required />
+          </div>
+          <div>
+            <label className={labelClass}>Slug</label>
+            <input type="text" value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} className={inputClass} required />
+          </div>
+          <div>
+            <label className={labelClass}>Type</label>
+            <select value={form.type} onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))} className={inputClass}>
+              {[...new Set([...PROJECT_TYPE_OPTIONS, form.type].filter(Boolean))].map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={labelClass}>Status</label>
+            <select value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))} className={inputClass}>
+              {[...new Set([...PROJECT_STATUS_OPTIONS, form.status].filter(Boolean))].map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={labelClass}>Role</label>
+            <input type="text" value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))} className={inputClass} required />
+          </div>
+          <div>
+            <label className={labelClass}>Scale</label>
+            <input type="text" value={form.scale} onChange={(e) => setForm((f) => ({ ...f, scale: e.target.value }))} className={inputClass} required />
+          </div>
+          <div>
+            <label className={labelClass}>Mission objective</label>
+            <textarea
+              value={form.missionObjective}
+              onChange={(e) => setForm((f) => ({ ...f, missionObjective: e.target.value }))}
+              rows={2}
+              className={`${inputClass} resize-y`}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Impact (one per line)</label>
+            <textarea value={form.impact} onChange={(e) => setForm((f) => ({ ...f, impact: e.target.value }))} rows={3} className={`${inputClass} resize-y`} />
+          </div>
+          <div>
+            <label className={labelClass}>Tech stack (comma-separated)</label>
+            <input type="text" value={form.techStack} onChange={(e) => setForm((f) => ({ ...f, techStack: e.target.value }))} className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>GitHub URL</label>
+            <input type="url" value={form.githubUrl} onChange={(e) => setForm((f) => ({ ...f, githubUrl: e.target.value }))} className={inputClass} />
+          </div>
+          <div>
+            <label className={labelClass}>Live URL</label>
+            <input type="url" value={form.liveUrl} onChange={(e) => setForm((f) => ({ ...f, liveUrl: e.target.value }))} className={inputClass} />
+          </div>
+          {error && <p className="text-red-400 text-xs">{error}</p>}
+          <div className="flex gap-2 pt-2">
+            <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg bg-accent/20 text-accent font-orbitron text-sm hover:bg-accent/30 disabled:opacity-50">
+              {saving ? 'Saving…' : (isEdit ? 'Save' : 'Create')}
+            </button>
+            <button type="button" onClick={onClose} disabled={saving} className="px-4 py-2 rounded-lg border border-glass-border text-gray-400 font-orbitron text-sm hover:text-white">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </motion.div>
+  )
+  return createPortal(modal, document.body)
 }

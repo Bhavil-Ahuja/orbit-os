@@ -345,8 +345,9 @@ All file references are URLs; no binary in DB.
 
 ```json
 [
-  { "icon": "Linkedin", "label": "LinkedIn", "href": "https://linkedin.com/in/..." },
-  { "icon": "Github", "label": "GitHub", "href": "https://github.com/..." }
+  { "icon": "Linkedin", "label": "LinkedIn", "href": "https://linkedin.com/in/in/bhavil-ahuja" },
+  { "icon": "Github", "label": "GitHub", "href": "https://github.com/Bhavil-Ahuja" },
+  { "icon": "X", "label": "X", "href": "https://x.com/AhujaBhavil" }
 ]
 ```
 

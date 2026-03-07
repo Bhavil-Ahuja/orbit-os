@@ -9,10 +9,14 @@ import com.orbitos.portfolio.entity.Resume;
 import com.orbitos.portfolio.exception.ResourceNotFoundException;
 import com.orbitos.portfolio.mapper.ResumeMapper;
 import com.orbitos.portfolio.repository.ResumeRepository;
+import com.orbitos.portfolio.service.CloudinaryService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Instant;
+import java.util.Optional;
 
 @Service
 public class ResumeService {
@@ -22,11 +26,20 @@ public class ResumeService {
     private final ResumeRepository resumeRepository;
     private final ResumeMapper resumeMapper;
     private final ObjectMapper objectMapper;
+    private final CloudinaryService cloudinaryService;
 
-    public ResumeService(ResumeRepository resumeRepository, ResumeMapper resumeMapper, ObjectMapper objectMapper) {
+    public ResumeService(ResumeRepository resumeRepository, ResumeMapper resumeMapper, ObjectMapper objectMapper,
+                         CloudinaryService cloudinaryService) {
         this.resumeRepository = resumeRepository;
         this.resumeMapper = resumeMapper;
         this.objectMapper = objectMapper;
+        this.cloudinaryService = cloudinaryService;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<ResumeDto> getResumeOptional() {
+        return resumeRepository.findFirstByOrderByIdAsc()
+                .map(resumeMapper::toDto);
     }
 
     @Transactional(readOnly = true)
@@ -57,5 +70,27 @@ public class ResumeService {
         resume.setUpdatedAt(Instant.now());
         resume = resumeRepository.save(resume);
         return resumeMapper.toDto(resume);
+    }
+
+    /**
+     * Uploads the file to Cloudinary and updates the resume singleton with the returned URL
+     * (both view and download use the same URL). Creates the resume row if it does not exist.
+     */
+    @Transactional
+    public ResumeDto uploadResumeFile(MultipartFile file) throws IOException {
+        String url = cloudinaryService.uploadRaw(file);
+        Resume resume = resumeRepository.findFirstByOrderByIdAsc().orElse(null);
+        if (resume == null) {
+            resume = Resume.builder()
+                    .viewUrl(url)
+                    .downloadUrl(url)
+                    .terminalData(null)
+                    .updatedAt(Instant.now())
+                    .build();
+            resume = resumeRepository.save(resume);
+            return resumeMapper.toDto(resume);
+        }
+        UpdateResumeRequestDto dto = new UpdateResumeRequestDto(url, url, null);
+        return updateResume(dto);
     }
 }

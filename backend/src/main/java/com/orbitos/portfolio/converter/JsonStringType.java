@@ -1,6 +1,5 @@
 package com.orbitos.portfolio.converter;
 
-import com.orbitos.portfolio.config.JsonColumnDefinitionHolder;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.usertype.UserType;
 
@@ -12,16 +11,14 @@ import java.sql.Types;
 import java.util.Objects;
 
 /**
- * Hibernate UserType for a String stored as JSON column (e.g. free-form JSON object).
- * Uses TEXT in H2 and JSONB in PostgreSQL.
+ * Hibernate UserType for a String stored as JSON in a TEXT column.
+ * Uses LONGVARCHAR so PostgreSQL creates TEXT (CLOB maps to oid and rejects string bind).
  */
 public class JsonStringType implements UserType<String> {
 
     @Override
     public int getSqlType() {
-        return "jsonb".equalsIgnoreCase(JsonColumnDefinitionHolder.getColumnDefinition())
-                ? Types.OTHER
-                : Types.CLOB;
+        return Types.LONGVARCHAR;
     }
 
     @Override

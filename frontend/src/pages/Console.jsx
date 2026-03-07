@@ -44,7 +44,7 @@ export default function Console() {
   )
 
   useScrollSection(scrollRef, sectionRefs)
-  const activeSection = useAppStore((s) => s.activeSection)
+  const activeSection = useAppStore((state) => state.activeSection)
 
   // When viewer lands on /console directly (e.g. shared link), treat as "in system"
   useEffect(() => {

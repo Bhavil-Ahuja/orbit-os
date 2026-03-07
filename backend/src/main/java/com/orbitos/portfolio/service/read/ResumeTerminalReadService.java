@@ -8,6 +8,8 @@ import com.orbitos.portfolio.repository.ResumeRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 /**
  * Read-model service: loads resume entity and maps terminal_data to view DTO.
  * Persistence (ResumeService) and presentation (ResumeTerminalMapper) stay separate.
@@ -30,5 +32,12 @@ public class ResumeTerminalReadService {
         Resume resume = resumeRepository.findFirstByOrderByIdAsc()
                 .orElseThrow(() -> new ResourceNotFoundException(RESUME_RESOURCE, "singleton"));
         return resumeTerminalMapper.toTerminalDto(resume.getTerminalData());
+    }
+
+    /** For bootstrap: return terminal data when resume exists, empty otherwise (no 404). */
+    @Transactional(readOnly = true)
+    public Optional<ResumeTerminalDto> getResumeTerminalOptional() {
+        return resumeRepository.findFirstByOrderByIdAsc()
+                .map(resume -> resumeTerminalMapper.toTerminalDto(resume.getTerminalData()));
     }
 }

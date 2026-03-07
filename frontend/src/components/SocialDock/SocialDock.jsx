@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Github, Linkedin, Twitter } from 'lucide-react'
 
 const links = [
-  { icon: Linkedin, label: 'LinkedIn', href: 'https://linkedin.com' },
-  { icon: Github, label: 'GitHub', href: 'https://github.com' },
-  { icon: Twitter, label: 'X (Twitter)', href: 'https://twitter.com' },
+  { icon: Linkedin, label: 'LinkedIn', href: 'https://linkedin.com/in/bhavil-ahuja' },
+  { icon: Github, label: 'GitHub', href: 'https://github.com/Bhavil-Ahuja' },
+  { icon: Twitter, label: 'X', href: 'https://x.com/AhujaBhavil' },
 ]
 
 function SocialLink({ icon: Icon, label, href, delay }) {
