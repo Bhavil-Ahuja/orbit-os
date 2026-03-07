@@ -45,7 +45,7 @@ function AppContent() {
           initial="exit"
           animate="enter"
           exit="exit"
-          className="min-h-screen"
+          className={location.pathname === '/explore' ? 'h-screen overflow-hidden' : 'min-h-screen'}
         >
           <Suspense fallback={<PageFallback />}>
             <Routes location={location}>
