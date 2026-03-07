@@ -55,11 +55,16 @@ public class ResumeFileController {
                     .build();
             HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
             if (response.statusCode() != 200) {
-                return ResponseEntity.status(response.statusCode()).build();
+                if (response.statusCode() == 404 || response.statusCode() == 410) {
+                    resumeService.clearUrlsIfUnreachable();
+                }
+                return ResponseEntity.status(response.statusCode())
+                        .header("Cache-Control", "no-store, must-revalidate")
+                        .build();
             }
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_PDF)
-                    .header("Cache-Control", "private, max-age=300")
+                    .header("Cache-Control", "no-store, must-revalidate")
                     .body(response.body());
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();

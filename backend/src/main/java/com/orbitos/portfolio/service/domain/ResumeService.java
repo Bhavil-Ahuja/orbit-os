@@ -42,6 +42,17 @@ public class ResumeService {
                 .map(resumeMapper::toDto);
     }
 
+    /** Clears view and download URL when the stored URL is no longer reachable (e.g. file deleted from Cloudinary). */
+    @Transactional
+    public void clearUrlsIfUnreachable() {
+        resumeRepository.findFirstByOrderByIdAsc().ifPresent(resume -> {
+            resume.setViewUrl("");
+            resume.setDownloadUrl("");
+            resume.setUpdatedAt(Instant.now());
+            resumeRepository.save(resume);
+        });
+    }
+
     @Transactional(readOnly = true)
     public ResumeDto getResume() {
         Resume resume = resumeRepository.findFirstByOrderByIdAsc()

@@ -25,4 +25,4 @@ management:
         include: health,mappings  # debug: GET /actuator/mappings lists all routes
 admin:
   auth:
-    plainPassword: password  # dev only: login with admin / password
+    plainPassword: ${ADMIN_PASSWORD:}

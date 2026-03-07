@@ -1,2 +1,3 @@
 org.springframework.context.ApplicationContextInitializer=\
+com.orbitos.portfolio.config.DatabaseUrlInitializer,\
 com.orbitos.portfolio.config.JsonColumnDefinitionInitializer

@@ -23,6 +23,12 @@ npm run dev   # http://localhost:3000
 npm run build
 ```
 
+## Secrets (no passwords in repo)
+Passwords and API keys are **not** committed. Use env files (gitignored):
+
+- **Repo root:** Copy `.env.example` to `.env` and set `POSTGRES_PASSWORD`, `PGADMIN_DEFAULT_PASSWORD` (required for `docker compose up -d`).
+- **Backend:** Copy `backend/.env.example` to `backend/.env` and set `SPRING_DATASOURCE_PASSWORD`, `ADMIN_PASSWORD`, and optionally Cloudinary keys. For local dev, use the same password as in root `.env` for Postgres.
+
 ## Project Structure (Phase 1)
 ```
 orbit-os/
@@ -55,9 +61,10 @@ orbit-os/
 ```
 
 ## Routes
-- `/` — Main page: landing (boot sequence → Explore the Universe) until you enter; then the full app (About, Experience, Projects, Skills, Resume, Stay in Touch). URL stays `http://localhost:3000/`.
-- `/app`, `/console` — Redirect to `/`.
-- `/whoami` — Hidden admin (password placeholder, no backend auth)
+- `/` — Landing: boot sequence and "Explore the Universe".
+- `/explore` — Main app (About, Experience, Projects, Skills, Resume, Stay in Touch).
+- `/app`, `/console` — Redirect to `/explore`.
+- `/whoami` — Admin login and dashboard.
 
 ## Data
 No hardcoded personal data. All content is loaded via `contentService` (mock: `frontend/src/services/mockData.js`). When backend exists: `GET /api/about`, `/api/projects`, `/api/skills`, `/api/experience`, `/api/resume`, `/api/landing`.

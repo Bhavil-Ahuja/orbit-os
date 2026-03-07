@@ -161,10 +161,13 @@ export default function ResumeViewer() {
       .finally(() => setLoading(false))
   }, [])
 
-  // PDF URL with filename so the browser viewer shows "Bhavil_Ahuja_Resume.pdf" instead of "resume-file"
+  // PDF URL: cache-bust with viewUrl + updatedAt so re-uploads and backend URL clears show fresh content (avoids stale cache after delete-from-Cloudinary).
   const iframePdfUrl = useMemo(
-    () => `${getApiBase()}/Bhavil_Ahuja_Resume.pdf`,
-    []
+    () =>
+      resume?.viewUrl
+        ? `${getApiBase()}/Bhavil_Ahuja_Resume.pdf?v=${encodeURIComponent(resume.viewUrl)}&t=${resume.updatedAt || ''}`
+        : null,
+    [resume?.viewUrl, resume?.updatedAt]
   )
 
   const showBootLog = inView && !bootDone

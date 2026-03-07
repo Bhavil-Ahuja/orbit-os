@@ -33,7 +33,6 @@ Tests use an in-memory H2 database (no PostgreSQL required).
 
 - `src/main/java/com/orbitos/portfolio/` — application and config
 - `src/main/resources/` — `application.yml`, profiles (`application-dev.yml`, `application-local.yml`)
-- `migrations/` — PostgreSQL schema (run manually or via your migration tool)
 
 ## API structure
 
@@ -56,3 +55,30 @@ Serialization uses Jackson via `ListStringJsonType` (Hibernate UserType). No `@C
 ./mvnw clean package
 java -jar target/portfolio-0.0.1-SNAPSHOT.jar
 ```
+
+## Deploy on Render
+
+1. **Create a Web Service**
+   - Go to [dashboard.render.com](https://dashboard.render.com) → **New** → **Web Service**.
+   - Connect your GitHub account and select the `orbit-os` repo (or the repo that contains `backend/`).
+
+2. **Configure the service**
+   - **Name:** e.g. `orbit-os-backend`.
+   - **Root Directory:** `backend` (so Render builds from the Spring Boot project).
+   - **Runtime:** Java (or leave auto-detected).
+   - **Build Command:** `./mvnw -DskipTests package`
+   - **Start Command:** `java -jar target/portfolio-0.0.1-SNAPSHOT.jar`
+
+3. **Environment variables** (Environment tab)
+   - **DATABASE_PUBLIC_URL** — Your Postgres URL (e.g. from Railway: use the **public** URL, e.g. `postgresql://user:password@host.railway.app:PORT/railway`). The app uses this when not on Railway.
+   - **ADMIN_USERNAME** — Admin login (e.g. `admin`).
+   - **ADMIN_PASSWORD** or **ADMIN_PASSWORD_HASH** — Use a strong password; for hash use BCrypt.
+   - **ADMIN_JWT_SECRET** — Long random string (min 32 chars) for signing JWTs.
+   - **CLOUDINARY_CLOUD_NAME**, **CLOUDINARY_API_KEY**, **CLOUDINARY_API_SECRET** — If you use resume PDF upload in admin (optional).
+
+4. **First deploy**
+   - Click **Create Web Service**. Render will build and start the app.
+   - To create tables on first run, add a one-off env var **SPRING_JPA_HIBERNATE_DDL_AUTO** = `update` for the first deploy, then remove it or set to `validate` for production.
+
+5. **Public URL**
+   - After deploy, open **Settings** → **Networking** and add a **Custom Domain** or use the default `*.onrender.com` URL.
