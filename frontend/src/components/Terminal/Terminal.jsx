@@ -41,12 +41,13 @@ export default function Terminal({ title = 'terminal', children, className = '',
             aria-hidden
           >
             <motion.div
-              className="absolute left-0 right-0 top-0 h-0.5"
+              className="absolute left-0 right-0 h-0.5"
               style={{
                 background: 'linear-gradient(90deg, transparent 0%, rgba(0, 212, 255, 0.1) 50%, transparent 100%)',
                 willChange: 'transform',
               }}
-              animate={{ y: [0, 320] }}
+              initial={{ top: '0%' }}
+              animate={{ top: '100%' }}
               transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
             />
           </motion.div>
