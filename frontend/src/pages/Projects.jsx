@@ -270,7 +270,7 @@ function ProjectCard({ project, index, inView, onSelect, isAdmin, onEdit, onDele
 
           <div className="relative p-5 md:p-6 flex flex-col flex-1 min-h-0">
             {/* Title — no glow, consistent with Publications / Experience */}
-            <h3 className="font-orbitron text-xl md:text-2xl font-semibold text-accent mb-1.5 flex-shrink-0" style={{ textShadow: 'none' }}>
+            <h3 className="font-orbitron text-lg md:text-xl text-accent mb-1.5 flex-shrink-0" style={{ textShadow: 'none' }}>
               {project.title}
             </h3>
 

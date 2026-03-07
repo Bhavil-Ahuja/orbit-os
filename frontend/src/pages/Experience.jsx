@@ -5,6 +5,7 @@ import { Pencil, Trash2, Plus, X } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore'
 import { useIsAdmin } from '../hooks/useIsAdmin'
 import { contentService } from '../services/contentService'
+import { useMouseTilt } from '../hooks/useMouseTilt'
 import { adminApi } from '../api/adminApi'
 import { publicApi } from '../api/publicApi'
 import ExperienceDetailModal from '../components/ExperienceDetailModal/ExperienceDetailModal'
@@ -36,18 +37,34 @@ function MissionCard({ mission, index, isAdmin, onSelect, onEdit, onDelete }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-50px' })
   const [hovered, setHovered] = useState(false)
+  const { ref: tiltRef, style: tiltStyle, mousePos, handleMouseMove, handleMouseLeave } = useMouseTilt({
+    maxTilt: 6,
+    perspective: 1000,
+  })
   const isActive = mission.status === 'ACTIVE'
   const bullets = impactToBullets(mission.impact)
 
+  const handleMouseEnter = () => setHovered(true)
+  const handleMouseLeaveCard = () => {
+    setHovered(false)
+    handleMouseLeave()
+  }
+
   return (
+    <div
+      ref={tiltRef}
+      style={tiltStyle}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeaveCard}
+      className="relative"
+    >
     <motion.div
       ref={ref}
       custom={[index, isActive]}
       variants={cardVariants}
       initial="hidden"
       animate={inView ? 'visible' : 'hidden'}
-      onHoverStart={() => setHovered(true)}
-      onHoverEnd={() => setHovered(false)}
       onClick={onSelect ? () => onSelect(mission) : undefined}
       role={onSelect ? 'button' : undefined}
       tabIndex={onSelect ? 0 : undefined}
@@ -109,11 +126,21 @@ function MissionCard({ mission, index, isAdmin, onSelect, onEdit, onDelete }) {
         </>
       )}
 
+      {/* Mouse-follow spotlight — same as Projects / Publications */}
+      <div
+        className="absolute inset-0 rounded-lg pointer-events-none transition-opacity duration-[250ms]"
+        style={{
+          opacity: hovered ? 1 : 0,
+          background: `radial-gradient(circle at ${mousePos.x * 100}% ${mousePos.y * 100}%, rgba(0, 212, 255, 0.1) 0%, transparent 50%)`,
+        }}
+        aria-hidden
+      />
+
       <div className="relative z-10 flex flex-wrap items-center gap-2 mb-2">
         <span className={`font-orbitron text-sm ${isActive ? 'text-accent' : 'text-accent/70'}`}>
           MISSION:
         </span>
-        <span className="font-orbitron text-white">{mission.mission}</span>
+        <span className="font-orbitron text-lg md:text-xl text-accent">{mission.mission}</span>
       </div>
       <div className="relative z-10 flex flex-wrap items-center gap-3 mb-3">
         <span className="font-space text-gray-500 text-xs uppercase tracking-wider">Status</span>
@@ -164,6 +191,7 @@ function MissionCard({ mission, index, isAdmin, onSelect, onEdit, onDelete }) {
         </div>
       )}
     </motion.div>
+    </div>
   )
 }
 
@@ -230,12 +258,12 @@ export default function Experience() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Outer boundary: gradient + thin border (no inset shadow to avoid inner boundary) */}
+      {/* Same outer boundary as Projects / Publications */}
       <div
-        className="absolute inset-0 -mx-4 -my-4 rounded-3xl pointer-events-none border border-white/[0.06]"
+        className="absolute inset-0 -mx-4 -my-4 rounded-3xl pointer-events-none"
         style={{
           background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0, 212, 255, 0.045) 0%, transparent 70%)',
-          boxShadow: '0 0 0 1px rgba(0, 212, 255, 0.06)',
+          boxShadow: 'inset 0 0 60px rgba(0, 212, 255, 0.02)',
         }}
         aria-hidden
       />
