@@ -10,6 +10,8 @@ import com.orbitos.portfolio.exception.ResourceNotFoundException;
 import com.orbitos.portfolio.mapper.ResumeMapper;
 import com.orbitos.portfolio.repository.ResumeRepository;
 import com.orbitos.portfolio.service.CloudinaryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,6 +23,7 @@ import java.util.Optional;
 @Service
 public class ResumeService {
 
+    private static final Logger log = LoggerFactory.getLogger(ResumeService.class);
     private static final String RESUME_RESOURCE = "Resume";
 
     private final ResumeRepository resumeRepository;
@@ -92,11 +95,12 @@ public class ResumeService {
      */
     @Transactional
     public ResumeDto uploadResumeFile(MultipartFile file) throws IOException {
+        byte[] bytes = file.getBytes();
         ResumeTerminalDto terminalData = null;
         try {
-            terminalData = pdfToTerminalParser.parse(file.getInputStream());
+            terminalData = pdfToTerminalParser.parse(bytes);
         } catch (Exception e) {
-            // Parsing failed; leave terminal_data unchanged or null
+            log.warn("Resume PDF parse failed, terminal view will be empty: {}", e.getMessage());
         }
         String url = cloudinaryService.uploadRaw(file);
         Resume resume = resumeRepository.findFirstByOrderByIdAsc().orElse(null);

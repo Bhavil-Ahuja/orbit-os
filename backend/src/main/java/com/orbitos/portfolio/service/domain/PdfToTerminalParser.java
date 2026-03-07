@@ -2,7 +2,6 @@ package com.orbitos.portfolio.service.domain;
 
 import com.orbitos.portfolio.dto.ResumeTerminalDto;
 import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Component;
@@ -26,14 +25,18 @@ public class PdfToTerminalParser {
     );
     private static final int MAX_HEADER_LENGTH = 50;
 
-    public ResumeTerminalDto parse(InputStream pdfInput) throws IOException {
-        try (RandomAccessReadBuffer buf = new RandomAccessReadBuffer(pdfInput);
-             PDDocument doc = Loader.loadPDF(buf)) {
+    /** Prefer this when you have bytes (e.g. from MultipartFile.getBytes()) to avoid stream consumption issues. */
+    public ResumeTerminalDto parse(byte[] pdfBytes) throws IOException {
+        try (PDDocument doc = Loader.loadPDF(pdfBytes)) {
             PDFTextStripper stripper = new PDFTextStripper();
             stripper.setSortByPosition(true);
             String raw = stripper.getText(doc);
             return parseRawText(raw);
         }
+    }
+
+    public ResumeTerminalDto parse(InputStream pdfInput) throws IOException {
+        return parse(pdfInput.readAllBytes());
     }
 
     ResumeTerminalDto parseRawText(String raw) {
