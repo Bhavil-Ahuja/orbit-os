@@ -56,7 +56,7 @@ export default function ExperienceDetailModal({ mission, onClose, isAdmin, onEdi
             <h2
               id="experience-detail-title"
               className="font-orbitron text-xl text-accent"
-              style={{ textShadow: '0 0 20px rgba(0, 212, 255, 0.3)' }}
+              style={{ textShadow: 'none' }}
             >
               {mission.mission}
             </h2>

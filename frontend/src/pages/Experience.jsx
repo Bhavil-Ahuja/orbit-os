@@ -222,12 +222,22 @@ export default function Experience() {
   return (
     <motion.div
       ref={sectionRef}
-      className="max-w-3xl mx-auto px-6 py-12 relative"
+      className="relative max-w-3xl mx-auto px-6 py-12"
       initial={{ opacity: 1 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
+      {/* Ambient boundary — same as Projects / Publications */}
+      <div
+        className="absolute inset-0 -mx-4 -my-4 rounded-3xl pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0, 212, 255, 0.045) 0%, transparent 70%)',
+          boxShadow: 'inset 0 0 60px rgba(0, 212, 255, 0.02)',
+        }}
+        aria-hidden
+      />
+
       <AnimatePresence>
         {inView && !archiveLoaded && (
           <motion.div
@@ -298,7 +308,7 @@ export default function Experience() {
 
         <div className="flex items-center justify-between gap-4 mb-2">
           <div>
-            <h1 className="font-orbitron text-2xl md:text-3xl text-accent mb-2">
+            <h1 className="font-orbitron text-2xl md:text-3xl text-accent mb-2" style={{ textShadow: 'none' }}>
               Experience
             </h1>
             <p className="text-gray-400 font-exo text-base mb-8">Mission logs</p>

@@ -120,7 +120,7 @@ export default function Publications() {
       <div className="relative">
         <div className="flex items-center justify-between gap-4 mb-2">
           <div>
-            <h1 className="font-orbitron text-2xl md:text-3xl text-accent mb-2">
+            <h1 className="font-orbitron text-2xl md:text-3xl text-accent mb-2" style={{ textShadow: 'none' }}>
               Publications
             </h1>
             <p className="text-gray-400 font-exo text-base mb-6">
@@ -260,7 +260,7 @@ function PublicationCard({ publication, index, inView, onSelect, isAdmin, onEdit
           />
 
           <div className="relative p-5 md:p-6">
-            <h3 className="font-orbitron text-lg md:text-xl text-accent mb-1.5">
+            <h3 className="font-orbitron text-lg md:text-xl text-accent mb-1.5" style={{ textShadow: 'none' }}>
               {title}
             </h3>
             <motion.div

@@ -119,7 +119,7 @@ export default function Projects() {
       <div className="relative">
         <div className="flex items-center justify-between gap-4 mb-2">
           <div>
-            <h1 className="font-orbitron text-2xl md:text-3xl text-accent mb-2">
+            <h1 className="font-orbitron text-2xl md:text-3xl text-accent mb-2" style={{ textShadow: 'none' }}>
               Projects
             </h1>
             <p className="text-gray-400 font-exo text-base mb-6">
@@ -269,8 +269,8 @@ function ProjectCard({ project, index, inView, onSelect, isAdmin, onEdit, onDele
           />
 
           <div className="relative p-5 md:p-6 flex flex-col flex-1 min-h-0">
-            {/* Title — consistent with Publications / Experience (no glow) */}
-            <h3 className="font-orbitron text-xl md:text-2xl font-semibold text-accent mb-1.5 flex-shrink-0">
+            {/* Title — no glow, consistent with Publications / Experience */}
+            <h3 className="font-orbitron text-xl md:text-2xl font-semibold text-accent mb-1.5 flex-shrink-0" style={{ textShadow: 'none' }}>
               {project.title}
             </h3>
 

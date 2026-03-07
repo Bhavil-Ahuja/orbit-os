@@ -50,7 +50,7 @@ export default function ProjectDetailModal({ project, onClose, isAdmin, onEdit, 
             <h2
               id="project-detail-title"
               className="font-orbitron text-xl text-accent"
-              style={{ textShadow: '0 0 20px rgba(0, 212, 255, 0.3)' }}
+              style={{ textShadow: 'none' }}
             >
               {project.title}
             </h2>

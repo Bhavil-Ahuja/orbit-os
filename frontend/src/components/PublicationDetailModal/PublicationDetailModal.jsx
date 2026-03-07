@@ -45,7 +45,7 @@ export default function PublicationDetailModal({ publication, onClose, isAdmin, 
             <h2
               id="publication-detail-title"
               className="font-orbitron text-xl text-accent"
-              style={{ textShadow: '0 0 20px rgba(0, 212, 255, 0.3)' }}
+              style={{ textShadow: 'none' }}
             >
               {title}
             </h2>
