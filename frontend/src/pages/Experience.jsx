@@ -170,8 +170,11 @@ function MissionCard({ mission, index, isAdmin, onSelect, onEdit, onDelete }) {
 export default function Experience() {
   const [items, setItems] = useState([])
   const [entryKey, setEntryKey] = useState(0)
+  const [archiveLoaded, setArchiveLoaded] = useState(false)
   const [selectedMission, setSelectedMission] = useState(null)
   const [experienceForm, setExperienceForm] = useState(null) // null | 'add' | mission (edit)
+  const sectionRef = useRef(null)
+  const inView = useInView(sectionRef, { once: true, amount: 0.2 })
   const activeSection = useAppStore((s) => s.activeSection)
   const prevSectionRef = useRef(activeSection)
   const isAdmin = useIsAdmin()
@@ -193,6 +196,12 @@ export default function Experience() {
   }, [])
 
   useEffect(() => {
+    if (!inView) return
+    const t = setTimeout(() => setArchiveLoaded(true), 1400)
+    return () => clearTimeout(t)
+  }, [inView])
+
+  useEffect(() => {
     if (prevSectionRef.current !== 'experience' && activeSection === 'experience') {
       setEntryKey((k) => k + 1)
     }
@@ -212,13 +221,57 @@ export default function Experience() {
 
   return (
     <motion.div
+      ref={sectionRef}
       className="max-w-3xl mx-auto px-6 py-12 relative"
       initial={{ opacity: 1 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
+      <AnimatePresence>
+        {inView && !archiveLoaded && (
+          <motion.div
+            key="loading-archive"
+            className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+          >
+            <p className="font-space text-accent/90 text-sm flex items-center gap-2">
+              <span className="text-green-500/80">&gt;</span>
+              Loading Mission Log...
+              <motion.span
+                animate={{ opacity: [1, 0] }}
+                transition={{ duration: 0.6, repeat: Infinity }}
+              >
+                _
+              </motion.span>
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {inView && archiveLoaded && (
+        <motion.div
+          className="absolute inset-0 rounded-3xl pointer-events-none overflow-hidden z-[1]"
+          aria-hidden
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
+        >
+          <motion.div
+            className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent"
+            initial={{ top: '0%' }}
+            animate={{ top: '100%' }}
+            transition={{ duration: 2, ease: [0.22, 0.61, 0.36, 1] }}
+            style={{ boxShadow: '0 0 20px rgba(0, 212, 255, 0.5)' }}
+          />
+        </motion.div>
+      )}
+
       {/* Module activation: content fades in + slides up when section becomes active (100ms after env) */}
+      {inView && archiveLoaded && (
       <motion.div
         key={entryKey}
         className="relative"
@@ -270,6 +323,7 @@ export default function Experience() {
           ))}
         </div>
       </motion.div>
+      )}
 
       <AnimatePresence>
         {selectedMission && (
