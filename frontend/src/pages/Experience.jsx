@@ -262,6 +262,7 @@ export default function Experience() {
         className="absolute inset-0 -mx-4 -my-4 rounded-3xl pointer-events-none"
         style={{
           background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0, 212, 255, 0.045) 0%, transparent 70%)',
+          boxShadow: 'inset 0 0 60px rgba(0, 212, 255, 0.02)',
         }}
         aria-hidden
       />
@@ -322,19 +323,6 @@ export default function Experience() {
           ease: 'easeOut',
         }}
       >
-        {/* Faint vertical trajectory — mission history / navigation path */}
-        <div
-          className="absolute left-5 top-16 bottom-12 w-px pointer-events-none hidden sm:block"
-          aria-hidden
-        >
-          <div
-            className="w-full h-full"
-            style={{
-              background: 'linear-gradient(180deg, transparent 0%, rgba(0, 212, 255, 0.055) 20%, rgba(0, 212, 255, 0.04) 50%, rgba(0, 212, 255, 0.055) 80%, transparent 100%)',
-            }}
-          />
-        </div>
-
         <div className="flex items-center justify-between gap-4 mb-2">
           <div>
             <h1 className="font-orbitron text-2xl md:text-3xl text-accent mb-2" style={{ textShadow: 'none' }}>
