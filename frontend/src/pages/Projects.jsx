@@ -228,21 +228,6 @@ function ProjectCard({ project, index, inView, onSelect, isAdmin, onEdit, onDele
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeaveCard}
     >
-      {/* Outer glow: flagship strongest; secondary ~15–20% reduced */}
-      <motion.div
-        className="absolute -inset-px rounded-2xl -z-10"
-        animate={{
-          boxShadow: hovered
-            ? isFlagship
-              ? '0 0 50px rgba(0, 212, 255, 0.2), 0 0 80px rgba(0, 212, 255, 0.1)'
-              : '0 0 42px rgba(0, 212, 255, 0.16), 0 0 70px rgba(0, 212, 255, 0.08)'
-            : isFlagship
-              ? '0 0 40px rgba(0, 212, 255, 0.12), 0 0 60px rgba(0, 212, 255, 0.06)'
-              : '0 0 26px rgba(0, 212, 255, 0.065), 0 0 45px rgba(0, 212, 255, 0.04)',
-        }}
-        transition={{ duration: 0.25 }}
-      />
-
       <motion.div
         className="h-full"
         animate={{ y: [0, -4, 0] }}
@@ -256,23 +241,15 @@ function ProjectCard({ project, index, inView, onSelect, isAdmin, onEdit, onDele
           className="relative rounded-2xl border border-glass-border bg-panel-bg/95 backdrop-blur-md overflow-hidden h-full flex flex-col"
           style={
             isFlagship
-              ? {
-                  borderColor: 'rgba(0, 212, 255, 0.35)',
-                  boxShadow: 'inset 0 0 0 1px rgba(0, 212, 255, 0.08), 0 0 30px rgba(0, 212, 255, 0.06)',
-                  background: 'linear-gradient(180deg, rgba(0, 212, 255, 0.04) 0%, rgba(2, 6, 23, 0.95) 30%)',
-                }
+              ? { borderColor: 'rgba(0, 212, 255, 0.3)', background: 'linear-gradient(180deg, rgba(0, 212, 255, 0.03) 0%, rgba(2, 6, 23, 0.95) 30%)' }
               : undefined
           }
           animate={{
             y: hovered ? -4 : 0,
-            borderColor: isFlagship ? 'rgba(0, 212, 255, 0.4)' : hovered ? 'rgba(0, 212, 255, 0.28)' : 'rgba(255,255,255,0.07)',
+            borderColor: isFlagship ? 'rgba(0, 212, 255, 0.35)' : hovered ? 'rgba(0, 212, 255, 0.25)' : 'rgba(255,255,255,0.07)',
             boxShadow: hovered
-              ? isFlagship
-                ? '0 0 0 1px rgba(0, 212, 255, 0.4), 0 24px 48px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 212, 255, 0.15), inset 0 0 40px rgba(0, 212, 255, 0.04)'
-                : '0 0 0 1px rgba(0, 212, 255, 0.32), 0 24px 48px -12px rgba(0, 0, 0, 0.48), 0 0 32px rgba(0, 212, 255, 0.1), inset 0 0 32px rgba(0, 212, 255, 0.02)'
-              : isFlagship
-                ? 'inset 0 0 0 1px rgba(0, 212, 255, 0.08), 0 0 30px rgba(0, 212, 255, 0.06)'
-                : '0 0 0 1px rgba(255,255,255,0.05), 0 20px 40px -12px rgba(0, 0, 0, 0.4), 0 0 24px rgba(0, 212, 255, 0.04)',
+              ? '0 0 0 1px rgba(0, 212, 255, 0.2), 0 20px 40px -12px rgba(0, 0, 0, 0.4)'
+              : '0 0 0 1px rgba(255,255,255,0.05), 0 20px 40px -12px rgba(0, 0, 0, 0.4)',
           }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
         >
