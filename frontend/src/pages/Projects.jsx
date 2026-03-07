@@ -292,14 +292,8 @@ function ProjectCard({ project, index, inView, onSelect, isAdmin, onEdit, onDele
           />
 
           <div className="relative p-5 md:p-6 flex flex-col flex-1 min-h-0">
-            {/* Title — strongest contrast */}
-            <h3
-              className="font-orbitron text-xl md:text-2xl font-semibold mb-1.5 flex-shrink-0"
-              style={{
-                color: 'rgba(0, 212, 255, 1)',
-                textShadow: isFlagship ? '0 0 24px rgba(0, 212, 255, 0.55), 0 0 48px rgba(0, 212, 255, 0.28)' : '0 0 20px rgba(0, 212, 255, 0.4), 0 0 40px rgba(0, 212, 255, 0.18)',
-              }}
-            >
+            {/* Title — consistent with Publications / Experience (no glow) */}
+            <h3 className="font-orbitron text-xl md:text-2xl font-semibold text-accent mb-1.5 flex-shrink-0">
               {project.title}
             </h3>
 
