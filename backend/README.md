@@ -69,7 +69,7 @@ java -jar target/portfolio-0.0.1-SNAPSHOT.jar
    - Leave **Build Command** and **Start Command** empty; the Dockerfile defines build and run.
 
 3. **Environment variables** (Environment tab)
-   - **DATABASE_PUBLIC_URL** — Your Postgres URL (e.g. from Railway: use the **public** URL, e.g. `postgresql://user:password@host.railway.app:PORT/railway`). The app uses this when not on Railway.
+   - **DATABASE_URL** or **DATABASE_PUBLIC_URL** — Your Postgres URL. On Render you must use the **public** URL (e.g. from Railway: copy `DATABASE_PUBLIC_URL` or the public connection string, e.g. `postgresql://user:password@host.railway.app:PORT/railway`). The app prefers `DATABASE_PUBLIC_URL` if set, otherwise uses `DATABASE_URL`.
    - **ADMIN_USERNAME** — Admin login (e.g. `admin`).
    - **ADMIN_PASSWORD** or **ADMIN_PASSWORD_HASH** — Use a strong password; for hash use BCrypt.
    - **ADMIN_JWT_SECRET** — Long random string (min 32 chars) for signing JWTs.

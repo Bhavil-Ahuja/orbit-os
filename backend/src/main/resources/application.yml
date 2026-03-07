@@ -26,6 +26,11 @@ spring:
           time_zone: UTC
     open-in-view: false
 
+# Optional: extra CORS origins for deployed frontend (comma-separated). Localhost 3000/5173 always allowed.
+# app:
+#   cors:
+#     allowed-origins: https://yourdomain.com,https://www.yourdomain.com
+
 # Single-user admin auth. Set ADMIN_USERNAME, ADMIN_PASSWORD_HASH (BCrypt), ADMIN_JWT_SECRET in production.
 # Dev: username=admin. For password either use BCrypt hash below, or set ADMIN_PASSWORD=password (plain-text, dev only).
 # Cloudinary: set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET (or in profile)

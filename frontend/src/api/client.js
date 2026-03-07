@@ -45,7 +45,10 @@ export async function apiRequest(path, options = {}) {
     if (import.meta.env.DEV) console.error("[API] fetch failed", url, e);
     const msg = e?.message ?? 'Failed to fetch'
     if (isNetworkError(msg)) {
-      throw new Error('Cannot reach the backend. Is it running on port 8080? Check the terminal and try again.')
+      const base = getApiBase()
+      throw new Error(base
+        ? `Cannot reach the backend at ${base}. Check that it is running and CORS allows this origin.`
+        : 'Cannot reach the backend. Set VITE_API_BASE_URL in .env (or env) and ensure the backend is running.')
     }
     throw e
   }
