@@ -56,18 +56,17 @@ Serialization uses Jackson via `ListStringJsonType` (Hibernate UserType). No `@C
 java -jar target/portfolio-0.0.1-SNAPSHOT.jar
 ```
 
-## Deploy on Render
+## Deploy on Render (Docker)
 
 1. **Create a Web Service**
    - Go to [dashboard.render.com](https://dashboard.render.com) → **New** → **Web Service**.
-   - Connect your GitHub account and select the `orbit-os` repo (or the repo that contains `backend/`).
+   - Connect your GitHub account and select the repo that contains `backend/`.
+   - When asked for **Runtime**, select **Docker**.
 
 2. **Configure the service**
    - **Name:** e.g. `orbit-os-backend`.
-   - **Root Directory:** `backend` (so Render builds from the Spring Boot project).
-   - **Runtime:** Java (or leave auto-detected).
-   - **Build Command:** `./mvnw -DskipTests package`
-   - **Start Command:** `java -jar target/portfolio-0.0.1-SNAPSHOT.jar`
+   - **Root Directory:** `backend` (so Render uses `backend/Dockerfile`).
+   - Leave **Build Command** and **Start Command** empty; the Dockerfile defines build and run.
 
 3. **Environment variables** (Environment tab)
    - **DATABASE_PUBLIC_URL** — Your Postgres URL (e.g. from Railway: use the **public** URL, e.g. `postgresql://user:password@host.railway.app:PORT/railway`). The app uses this when not on Railway.
