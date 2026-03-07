@@ -17,6 +17,8 @@ export default function Projects() {
   const [projectForm, setProjectForm] = useState(null) // null | 'add' | project (edit)
   const sectionRef = useRef(null)
   const inView = useInView(sectionRef, { once: true, amount: 0.05 })
+  const activeSection = useAppStore((s) => s.activeSection)
+  const isProjectsActive = activeSection === 'projects'
 
   const isAdmin = useIsAdmin()
   const refetchBootstrap = useAppStore((s) => s.refetchBootstrap)
@@ -37,10 +39,10 @@ export default function Projects() {
   }, [])
 
   useEffect(() => {
-    if (!inView) return
+    if (!isProjectsActive) return
     const t = setTimeout(() => setModulesLoaded(true), 1400)
     return () => clearTimeout(t)
-  }, [inView])
+  }, [isProjectsActive])
 
   const handleDelete = async (project) => {
     if (!isAdmin || !window.confirm(`Delete "${project.title}"?`)) return
@@ -73,10 +75,10 @@ export default function Projects() {
       />
 
       <AnimatePresence>
-        {inView && !modulesLoaded && (
+        {isProjectsActive && !modulesLoaded && (
           <motion.div
             key="loading-modules"
-            className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"
+            className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none min-h-[200px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -96,7 +98,7 @@ export default function Projects() {
         )}
       </AnimatePresence>
 
-      {inView && modulesLoaded && (
+      {(inView || isProjectsActive) && modulesLoaded && (
         <motion.div
           className="absolute inset-0 rounded-3xl pointer-events-none overflow-hidden z-[1]"
           aria-hidden
@@ -141,7 +143,7 @@ export default function Projects() {
               key={project.id}
               project={project}
               index={i}
-              inView={inView && modulesLoaded}
+              inView={(inView || isProjectsActive) && modulesLoaded}
               onSelect={setSelectedProject}
               isAdmin={isAdmin}
               onEdit={() => setProjectForm(project)}
