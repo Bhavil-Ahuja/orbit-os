@@ -228,11 +228,21 @@ export default function Experience() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
+      {/* Same ambient boundary as Projects / Publications — consistent loading boundary */}
+      <div
+        className="absolute inset-0 -mx-4 -my-4 rounded-3xl pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0, 212, 255, 0.045) 0%, transparent 70%)',
+          boxShadow: 'inset 0 0 60px rgba(0, 212, 255, 0.02)',
+        }}
+        aria-hidden
+      />
+
       <AnimatePresence>
         {inView && !archiveLoaded && (
           <motion.div
             key="loading-archive"
-            className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"
+            className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none min-h-[200px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -254,7 +264,7 @@ export default function Experience() {
 
       {inView && archiveLoaded && (
         <motion.div
-          className="absolute inset-0 rounded-3xl pointer-events-none overflow-hidden z-[1]"
+          className="absolute inset-0 pointer-events-none z-[1]"
           aria-hidden
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
