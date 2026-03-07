@@ -37,8 +37,8 @@ function MissionCard({ mission, index, isAdmin, onSelect, onEdit, onDelete }) {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, margin: '-50px' })
   const [hovered, setHovered] = useState(false)
-  const { ref: tiltRef, style: tiltStyle, mousePos, handleMouseMove, handleMouseLeave } = useMouseTilt({
-    maxTilt: 6,
+  const { ref: tiltRef, mousePos, handleMouseMove, handleMouseLeave } = useMouseTilt({
+    maxTilt: 0,
     perspective: 1000,
   })
   const isActive = mission.status === 'ACTIVE'
@@ -53,7 +53,6 @@ function MissionCard({ mission, index, isAdmin, onSelect, onEdit, onDelete }) {
   return (
     <div
       ref={tiltRef}
-      style={tiltStyle}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeaveCard}
@@ -140,7 +139,7 @@ function MissionCard({ mission, index, isAdmin, onSelect, onEdit, onDelete }) {
         <span className={`font-orbitron text-sm ${isActive ? 'text-accent' : 'text-accent/70'}`}>
           MISSION:
         </span>
-        <span className="font-orbitron text-lg md:text-xl text-accent">{mission.mission}</span>
+        <span className="font-orbitron text-lg md:text-xl text-white">{mission.mission}</span>
       </div>
       <div className="relative z-10 flex flex-wrap items-center gap-3 mb-3">
         <span className="font-space text-gray-500 text-xs uppercase tracking-wider">Status</span>
@@ -252,7 +251,7 @@ export default function Experience() {
   return (
     <motion.div
       ref={sectionRef}
-      className="relative max-w-3xl mx-auto px-6 py-12 min-h-[min(100vh,900px)]"
+      className={`relative max-w-3xl mx-auto px-6 py-12 ${!archiveLoaded ? 'min-h-[min(100vh,900px)]' : ''}`}
       initial={{ opacity: 1 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -263,7 +262,6 @@ export default function Experience() {
         className="absolute inset-0 -mx-4 -my-4 rounded-3xl pointer-events-none"
         style={{
           background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(0, 212, 255, 0.045) 0%, transparent 70%)',
-          boxShadow: 'inset 0 0 60px rgba(0, 212, 255, 0.02)',
         }}
         aria-hidden
       />

@@ -59,7 +59,7 @@ export default function Publications() {
   return (
     <motion.div
       ref={sectionRef}
-      className="relative max-w-4xl mx-auto px-6 py-8 min-h-[min(100vh,900px)]"
+      className={`relative max-w-4xl mx-auto px-6 py-8 ${!archiveLoaded ? 'min-h-[min(100vh,900px)]' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
