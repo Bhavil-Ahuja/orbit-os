@@ -142,7 +142,12 @@ export default function About() {
                   className="w-full h-48 px-3 py-2 rounded-lg bg-void/80 border border-glass-border text-white font-space text-sm focus:border-accent/50 focus:outline-none resize-y"
                   placeholder="About content..."
                 />
-                {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+                {error && (
+                <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 mt-2">
+                  <p className="text-red-400 text-sm font-medium">Request failed</p>
+                  <p className="text-red-300/90 text-sm mt-0.5">{error}</p>
+                </div>
+              )}
                 <div className="flex gap-2 mt-4">
                   <button type="button" onClick={saveEdit} disabled={saving} className="px-4 py-2 rounded-lg bg-accent/20 text-accent font-orbitron text-sm hover:bg-accent/30 disabled:opacity-50">
                     {saving ? 'Saving…' : 'Save'}

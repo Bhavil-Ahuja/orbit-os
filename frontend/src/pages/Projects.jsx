@@ -523,7 +523,12 @@ function ProjectFormModal({ project, onClose, onSaved }) {
             <label className={labelClass}>Live URL</label>
             <input type="url" value={form.liveUrl} onChange={(e) => setForm((f) => ({ ...f, liveUrl: e.target.value }))} className={inputClass} />
           </div>
-          {error && <p className="text-red-400 text-xs">{error}</p>}
+          {error && (
+            <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2">
+              <p className="text-red-400 text-sm font-medium">Request failed</p>
+              <p className="text-red-300/90 text-sm mt-0.5">{error}</p>
+            </div>
+          )}
           <div className="flex gap-2 pt-2">
             <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg bg-accent/20 text-accent font-orbitron text-sm hover:bg-accent/30 disabled:opacity-50">
               {saving ? 'Saving…' : (isEdit ? 'Save' : 'Create')}

@@ -2,12 +2,28 @@ package com.orbitos.portfolio.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.stream.Collectors;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .map(e -> e.getField() + ": " + (e.getDefaultMessage() != null ? e.getDefaultMessage() : "invalid"))
+                .collect(Collectors.joining("; "));
+        if (message.isBlank()) {
+            message = "Validation failed. Check required fields and length limits.";
+        } else {
+            message = "Validation failed: " + message;
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(message));
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Void> handleResourceNotFound(ResourceNotFoundException ex) {

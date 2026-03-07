@@ -473,7 +473,12 @@ function SkillFormModal({ skill, categories, onClose, onSaved }) {
               <p className="text-amber-500/90 text-xs mt-1">Loading categories…</p>
             )}
           </div>
-          {error && <p className="text-red-400 text-xs">{error}</p>}
+          {error && (
+            <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2">
+              <p className="text-red-400 text-sm font-medium">Request failed</p>
+              <p className="text-red-300/90 text-sm mt-0.5">{error}</p>
+            </div>
+          )}
           <div className="flex gap-2 pt-2">
             <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg bg-accent/20 text-accent font-orbitron text-sm hover:bg-accent/30 disabled:opacity-50">{saving ? 'Saving…' : (isEdit ? 'Save' : 'Create')}</button>
             <button type="button" onClick={onClose} disabled={saving} className="px-4 py-2 rounded-lg border border-glass-border text-gray-400 font-orbitron text-sm hover:text-white">Cancel</button>
@@ -498,6 +503,7 @@ export default function Skills() {
   const [hoveredCategoryFromPill, setHoveredCategoryFromPill] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [webglContextLost, setWebglContextLost] = useState(false)
+  const [orbitRemountKey, setOrbitRemountKey] = useState(0)
   const skillsByOrbit = useMemo(() => groupSkillsByCategory(skills), [skills])
   const skillIdToCategory = useMemo(() => {
     const m = {}
@@ -587,6 +593,7 @@ export default function Skills() {
           <div className="absolute inset-0 w-full h-full">
             {skills.length > 0 && orbitInView && !webglContextLost ? (
               <SkillsScene
+                key={orbitRemountKey}
                 skills={skills}
                 hoveredSkillId={hoveredSkillId}
                 setHoveredSkillId={setHoveredSkillId}
@@ -598,8 +605,18 @@ export default function Skills() {
                 onContextRestored={() => setWebglContextLost(false)}
               />
             ) : skills.length > 0 && webglContextLost ? (
-              <div className="w-full h-full rounded-2xl flex items-center justify-center text-gray-500 font-space text-sm border border-white/10 bg-black/20">
-                Orbit view unavailable (GPU context lost). Refresh the page to restore.
+              <div className="w-full h-full rounded-2xl flex flex-col items-center justify-center gap-4 p-4 text-center border border-white/10 bg-black/30">
+                <p className="text-gray-400 font-space text-sm">
+                  Orbit view paused (GPU context lost). This can happen when the tab was in the background or on some mobile devices.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => { setWebglContextLost(false); setOrbitRemountKey((k) => k + 1) }}
+                  className="px-4 py-2 rounded-lg bg-accent/20 border border-accent/50 text-accent font-orbitron text-sm hover:bg-accent/30 transition-colors"
+                >
+                  Try again
+                </button>
+                <p className="text-gray-500 font-space text-xs">If it still fails, refresh the page.</p>
               </div>
             ) : skills.length > 0 && !orbitInView ? (
               <div className="w-full h-full rounded-2xl flex items-center justify-center text-gray-500 font-space text-sm border border-white/10 bg-black/20">

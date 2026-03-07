@@ -13,6 +13,9 @@ export default function ProjectDetailModal({ project, onClose, isAdmin, onEdit, 
 
   if (!project) return null
 
+  const hasMission = project.missionObjective != null && String(project.missionObjective).trim() !== ''
+  const impactList = Array.isArray(project.impact) ? project.impact.filter(Boolean) : []
+  const hasMeta = project.status != null || project.type != null || project.role != null || project.scale != null
   const hasArch = project.architectureOverview != null
   const designDecisions = Array.isArray(project.designDecisions) ? project.designDecisions : []
   const technicalChallenges = Array.isArray(project.technicalChallenges) ? project.technicalChallenges : []
@@ -74,6 +77,47 @@ export default function ProjectDetailModal({ project, onClose, isAdmin, onEdit, 
           </div>
 
           <div className="overflow-y-auto flex-1 p-6 space-y-5">
+            {hasMeta && (
+              <section>
+                <div className="font-space text-gray-500 text-xs uppercase tracking-wider mb-2">
+                  META
+                </div>
+                <div className="font-exo text-gray-300 text-sm flex flex-wrap gap-x-4 gap-y-1">
+                  {project.status != null && <span><span className="text-gray-500">Status</span> {project.status}</span>}
+                  {project.type != null && <span><span className="text-gray-500">Type</span> {project.type}</span>}
+                  {project.role != null && <span><span className="text-gray-500">Role</span> {project.role}</span>}
+                  {project.scale != null && <span><span className="text-gray-500">Scale</span> {project.scale}</span>}
+                </div>
+              </section>
+            )}
+
+            {hasMission && (
+              <section>
+                <div className="font-space text-gray-500 text-xs uppercase tracking-wider mb-2">
+                  MISSION OBJECTIVE
+                </div>
+                <p className="font-exo text-gray-200 text-sm leading-relaxed">
+                  {project.missionObjective}
+                </p>
+              </section>
+            )}
+
+            {impactList.length > 0 && (
+              <section>
+                <div className="font-space text-gray-500 text-xs uppercase tracking-wider mb-2">
+                  IMPACT
+                </div>
+                <ul className="font-exo text-gray-200 text-sm leading-relaxed space-y-1.5 list-none">
+                  {impactList.map((line, i) => (
+                    <li key={i} className="flex gap-2">
+                      <span className="text-accent/80 shrink-0">•</span>
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
             {hasArch && (
               <section>
                 <div className="font-space text-gray-500 text-xs uppercase tracking-wider mb-2">
@@ -135,34 +179,47 @@ export default function ProjectDetailModal({ project, onClose, isAdmin, onEdit, 
               </section>
             )}
 
-            <div className="flex flex-wrap gap-2 pt-2">
-              {project.techStack?.map((tech) => (
-                <span
-                  key={tech}
-                  className="px-2.5 py-1 rounded-md bg-accent/10 text-accent/90 font-exo text-sm"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-4 pt-2 border-t border-white/10">
-              <a
-                href={project.githubUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-gray-400 hover:text-accent font-exo text-sm transition-colors"
-              >
-                <Github size={16} /> GitHub
-              </a>
-              <a
-                href={project.liveUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-gray-400 hover:text-accent font-exo text-sm transition-colors"
-              >
-                <ExternalLink size={16} /> Live demo
-              </a>
-            </div>
+            {project.techStack?.length > 0 && (
+              <section>
+                <div className="font-space text-gray-500 text-xs uppercase tracking-wider mb-2">
+                  TECH STACK
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {project.techStack.map((tech) => (
+                    <span
+                      key={tech}
+                      className="px-2.5 py-1 rounded-md bg-accent/10 text-accent/90 font-exo text-sm"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+            {(project.githubUrl || project.liveUrl) && (
+              <div className="flex gap-4 pt-2 border-t border-white/10">
+                {project.githubUrl && (
+                  <a
+                    href={project.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-gray-400 hover:text-accent font-exo text-sm transition-colors"
+                  >
+                    <Github size={16} /> GitHub
+                  </a>
+                )}
+                {project.liveUrl && (
+                  <a
+                    href={project.liveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-gray-400 hover:text-accent font-exo text-sm transition-colors"
+                  >
+                    <ExternalLink size={16} /> Live demo
+                  </a>
+                )}
+              </div>
+            )}
           </div>
         </motion.div>
       </motion.div>
