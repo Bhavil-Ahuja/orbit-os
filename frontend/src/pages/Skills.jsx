@@ -583,32 +583,34 @@ export default function Skills() {
         )}
       </div>
       <div className="grid md:grid-cols-2 gap-8 items-start">
-        <div className="aspect-square min-h-[280px]">
-          {skills.length > 0 && orbitInView && !webglContextLost ? (
-            <SkillsScene
-              skills={skills}
-              hoveredSkillId={hoveredSkillId}
-              setHoveredSkillId={setHoveredSkillId}
-              hoveredCategoryFromRing={hoveredCategoryFromRing}
-              setHoveredCategoryFromRing={setHoveredCategoryFromRing}
-              selectedCategory={selectedCategory}
-              hoveredCategory={hoveredCategory}
-              onContextLost={() => setWebglContextLost(true)}
-              onContextRestored={() => setWebglContextLost(false)}
-            />
-          ) : skills.length > 0 && webglContextLost ? (
-            <div className="w-full h-full rounded-2xl flex items-center justify-center text-gray-500 font-space text-sm border border-white/10 bg-black/20">
-              Orbit view unavailable (GPU context lost). Refresh the page to restore.
-            </div>
-          ) : skills.length > 0 && !orbitInView ? (
-            <div className="w-full h-full rounded-2xl flex items-center justify-center text-gray-500 font-space text-sm border border-white/10 bg-black/20">
-              Scroll into view to load orbit
-            </div>
-          ) : (
-            <div className="w-full h-full rounded-2xl flex items-center justify-center text-gray-500 font-space">
-              Loading...
-            </div>
-          )}
+        <div className="relative w-full h-[min(280px,75vmin)] max-h-[75vmin] shrink-0 overflow-hidden rounded-2xl md:h-auto md:max-h-none md:aspect-square md:min-h-[280px]">
+          <div className="absolute inset-0 w-full h-full">
+            {skills.length > 0 && orbitInView && !webglContextLost ? (
+              <SkillsScene
+                skills={skills}
+                hoveredSkillId={hoveredSkillId}
+                setHoveredSkillId={setHoveredSkillId}
+                hoveredCategoryFromRing={hoveredCategoryFromRing}
+                setHoveredCategoryFromRing={setHoveredCategoryFromRing}
+                selectedCategory={selectedCategory}
+                hoveredCategory={hoveredCategory}
+                onContextLost={() => setWebglContextLost(true)}
+                onContextRestored={() => setWebglContextLost(false)}
+              />
+            ) : skills.length > 0 && webglContextLost ? (
+              <div className="w-full h-full rounded-2xl flex items-center justify-center text-gray-500 font-space text-sm border border-white/10 bg-black/20">
+                Orbit view unavailable (GPU context lost). Refresh the page to restore.
+              </div>
+            ) : skills.length > 0 && !orbitInView ? (
+              <div className="w-full h-full rounded-2xl flex items-center justify-center text-gray-500 font-space text-sm border border-white/10 bg-black/20">
+                Scroll into view to load orbit
+              </div>
+            ) : (
+              <div className="w-full h-full rounded-2xl flex items-center justify-center text-gray-500 font-space">
+                Loading...
+              </div>
+            )}
+          </div>
         </div>
         <div className="space-y-6">
           {skillsByOrbit.length > 0 && (
