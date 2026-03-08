@@ -72,4 +72,16 @@ public class PublicationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Publication", String.valueOf(id)));
         publicationRepository.delete(publication);
     }
+
+    @Transactional
+    public void reorder(List<Long> orderedIds) {
+        if (orderedIds == null || orderedIds.isEmpty()) return;
+        for (int i = 0; i < orderedIds.size(); i++) {
+            Publication p = publicationRepository.findById(orderedIds.get(i))
+                    .orElseThrow(() -> new ResourceNotFoundException("Publication", String.valueOf(orderedIds.get(i))));
+            p.setSortOrder(i);
+            p.setUpdatedAt(Instant.now());
+        }
+        publicationRepository.flush();
+    }
 }

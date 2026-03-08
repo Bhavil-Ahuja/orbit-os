@@ -9,6 +9,7 @@ import { useMouseTilt } from '../hooks/useMouseTilt'
 import { adminApi } from '../api/adminApi'
 import { publicApi } from '../api/publicApi'
 import ExperienceDetailModal from '../components/ExperienceDetailModal/ExperienceDetailModal'
+import SortableList from '../components/SortableList/SortableList'
 
 const ENTRY_DURATION_MS = 400
 const ENTRY_DELAY_MS = 100
@@ -29,7 +30,8 @@ function sortExperiencesByActiveThenEndDateDesc(list) {
     if (m.status === 'ACTIVE') return -Infinity
     const p = (m.period || '').trim()
     if (/present/i.test(p)) return -Infinity
-    const range = p.split(/\s*[–\-]\s*/)
+    // Split on " - " or " – " (space dash space) so we don't split inside "2023-05"
+    const range = p.split(/\s+[–\-]\s+/)
     const to = range.length >= 2 ? range[1].trim() : ''
     const match = to.match(/(\d{4})(?:-?(\d{2}))?/) || to.match(/(\d{4})/)
     if (!match) return 0
@@ -355,8 +357,17 @@ export default function Experience() {
             </button>
           )}
         </div>
-        <div className="space-y-4 relative pl-0 sm:pl-2">
-          {sortedItems.map((mission, i) => (
+        <SortableList
+          items={sortedItems}
+          getId={(m) => m.id}
+          onReorder={async (orderedIds) => {
+            await adminApi.reorderExperience(orderedIds)
+            await refreshItems()
+          }}
+          isAdmin={isAdmin}
+          layout="vertical"
+        >
+          {(mission, i) => (
             <MissionCard
               key={mission.id}
               mission={mission}
@@ -366,8 +377,8 @@ export default function Experience() {
               onEdit={() => setExperienceForm(mission)}
               onDelete={() => handleDelete(mission)}
             />
-          ))}
-        </div>
+          )}
+        </SortableList>
       </motion.div>
       )}
 

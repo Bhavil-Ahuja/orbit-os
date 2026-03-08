@@ -71,4 +71,16 @@ public class ExperienceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Experience", String.valueOf(id)));
         experienceRepository.delete(experience);
     }
+
+    @Transactional
+    public void reorder(List<Long> orderedIds) {
+        if (orderedIds == null || orderedIds.isEmpty()) return;
+        for (int i = 0; i < orderedIds.size(); i++) {
+            Experience e = experienceRepository.findById(orderedIds.get(i))
+                    .orElseThrow(() -> new ResourceNotFoundException("Experience", String.valueOf(orderedIds.get(i))));
+            e.setSortOrder(i);
+            e.setUpdatedAt(Instant.now());
+        }
+        experienceRepository.flush();
+    }
 }

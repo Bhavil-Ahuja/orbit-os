@@ -42,6 +42,13 @@ export const adminApi = {
     });
   },
 
+  reorderProjects(orderedIds) {
+    return apiRequest("/api/admin/projects/reorder", {
+      method: "PUT",
+      body: JSON.stringify(orderedIds),
+    });
+  },
+
   publishProject(id) {
     return apiRequest(`/api/admin/projects/${id}/publish`, {
       method: "POST",
@@ -66,6 +73,13 @@ export const adminApi = {
   deleteExperience(id) {
     return apiRequest(`/api/admin/experience/${id}`, {
       method: "DELETE",
+    });
+  },
+
+  reorderExperience(orderedIds) {
+    return apiRequest("/api/admin/experience/reorder", {
+      method: "PUT",
+      body: JSON.stringify(orderedIds),
     });
   },
 
@@ -121,6 +135,13 @@ export const adminApi = {
   deletePublication(id) {
     return apiRequest(`/api/admin/publications/${id}`, {
       method: "DELETE",
+    });
+  },
+
+  reorderPublications(orderedIds) {
+    return apiRequest("/api/admin/publications/reorder", {
+      method: "PUT",
+      body: JSON.stringify(orderedIds),
     });
   },
 

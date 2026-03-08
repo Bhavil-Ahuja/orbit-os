@@ -9,6 +9,7 @@ import { useIsAdmin } from '../hooks/useIsAdmin'
 import { adminApi } from '../api/adminApi'
 import { publicApi } from '../api/publicApi'
 import ProjectDetailModal from '../components/ProjectDetailModal/ProjectDetailModal'
+import SortableList from '../components/SortableList/SortableList'
 
 export default function Projects() {
   const [projects, setProjects] = useState([])
@@ -137,8 +138,17 @@ export default function Projects() {
           )}
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 items-stretch">
-          {projects.map((project, i) => (
+        <SortableList
+          items={projects}
+          getId={(p) => p.id}
+          onReorder={async (orderedIds) => {
+            await adminApi.reorderProjects(orderedIds)
+            await refreshProjects()
+          }}
+          isAdmin={isAdmin}
+          layout="grid"
+        >
+          {(project, i) => (
             <ProjectCard
               key={project.id}
               project={project}
@@ -149,8 +159,8 @@ export default function Projects() {
               onEdit={() => setProjectForm(project)}
               onDelete={() => handleDelete(project)}
             />
-          ))}
-        </div>
+          )}
+        </SortableList>
       </div>
 
       <AnimatePresence>

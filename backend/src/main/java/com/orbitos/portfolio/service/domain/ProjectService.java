@@ -128,4 +128,16 @@ public class ProjectService {
         project = projectRepository.save(project);
         return projectMapper.toDto(project);
     }
+
+    @Transactional
+    public void reorder(List<Long> orderedIds) {
+        if (orderedIds == null || orderedIds.isEmpty()) return;
+        for (int i = 0; i < orderedIds.size(); i++) {
+            Project p = projectRepository.findById(orderedIds.get(i))
+                    .orElseThrow(() -> new ResourceNotFoundException("Project", String.valueOf(orderedIds.get(i))));
+            p.setSortOrder(i);
+            p.setUpdatedAt(Instant.now());
+        }
+        projectRepository.flush();
+    }
 }

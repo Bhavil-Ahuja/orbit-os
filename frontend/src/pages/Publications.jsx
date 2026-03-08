@@ -9,6 +9,7 @@ import { useIsAdmin } from '../hooks/useIsAdmin'
 import { adminApi } from '../api/adminApi'
 import { publicApi } from '../api/publicApi'
 import PublicationDetailModal from '../components/PublicationDetailModal/PublicationDetailModal'
+import SortableList from '../components/SortableList/SortableList'
 
 const CARD_SPRING = { type: 'spring', stiffness: 360, damping: 28 }
 const CARD_HOVER_LIFT_PX = -4
@@ -134,8 +135,17 @@ export default function Publications() {
           )}
         </div>
 
-        <div className="grid gap-4 grid-cols-1 w-full">
-          {publications.map((pub, i) => (
+        <SortableList
+          items={publications}
+          getId={(p) => p.id}
+          onReorder={async (orderedIds) => {
+            await adminApi.reorderPublications(orderedIds)
+            await refreshPublications()
+          }}
+          isAdmin={isAdmin}
+          layout="vertical"
+        >
+          {(pub, i) => (
             <PublicationCard
               key={pub.id}
               publication={pub}
@@ -146,8 +156,8 @@ export default function Publications() {
               onEdit={() => setPubForm(pub)}
               onDelete={() => handleDelete(pub)}
             />
-          ))}
-        </div>
+          )}
+        </SortableList>
       </div>
 
       <AnimatePresence>
