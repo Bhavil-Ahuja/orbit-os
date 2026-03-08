@@ -217,7 +217,7 @@ function ProjectCard({ project, index, inView, onSelect, isAdmin, onEdit, onDele
       tabIndex={onSelect ? 0 : undefined}
       onClick={onSelect ? handleCardClick : undefined}
       onKeyDown={onSelect ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick(); } } : undefined}
-      className={`relative rounded-2xl overflow-visible ${onSelect ? 'cursor-pointer' : ''}`}
+      className={`relative rounded-2xl overflow-visible h-full ${onSelect ? 'cursor-pointer' : ''}`}
       style={tiltStyle}
       initial={{ opacity: 0, y: 24, scale: isFlagship ? 0.98 : 0.96 }}
       animate={
