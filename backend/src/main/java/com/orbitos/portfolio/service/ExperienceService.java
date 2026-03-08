@@ -76,9 +76,11 @@ public class ExperienceService {
     public void reorder(List<Long> orderedIds) {
         if (orderedIds == null || orderedIds.isEmpty()) return;
         for (int i = 0; i < orderedIds.size(); i++) {
-            Experience e = experienceRepository.findById(orderedIds.get(i))
-                    .orElseThrow(() -> new ResourceNotFoundException("Experience", String.valueOf(orderedIds.get(i))));
-            e.setSortOrder(i);
+            final int sortOrder = i;
+            final Long id = orderedIds.get(i);
+            Experience e = experienceRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Experience", String.valueOf(id)));
+            e.setSortOrder(sortOrder);
             e.setUpdatedAt(Instant.now());
         }
         experienceRepository.flush();
