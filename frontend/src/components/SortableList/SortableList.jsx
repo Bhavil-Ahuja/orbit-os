@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
+import { DndContext } from '@dnd-kit/core'
 import {
-  DndContext,
   SortableContext,
   arrayMove,
   useSortable,
