@@ -133,9 +133,11 @@ public class ProjectService {
     public void reorder(List<Long> orderedIds) {
         if (orderedIds == null || orderedIds.isEmpty()) return;
         for (int i = 0; i < orderedIds.size(); i++) {
-            Project p = projectRepository.findById(orderedIds.get(i))
-                    .orElseThrow(() -> new ResourceNotFoundException("Project", String.valueOf(orderedIds.get(i))));
-            p.setSortOrder(i);
+            final int sortOrder = i;
+            final Long id = orderedIds.get(i);
+            Project p = projectRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Project", String.valueOf(id)));
+            p.setSortOrder(sortOrder);
             p.setUpdatedAt(Instant.now());
         }
         projectRepository.flush();
