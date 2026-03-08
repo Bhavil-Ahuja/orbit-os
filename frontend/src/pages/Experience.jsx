@@ -9,7 +9,6 @@ import { useMouseTilt } from '../hooks/useMouseTilt'
 import { adminApi } from '../api/adminApi'
 import { publicApi } from '../api/publicApi'
 import ExperienceDetailModal from '../components/ExperienceDetailModal/ExperienceDetailModal'
-import SortableList from '../components/SortableList/SortableList'
 
 const ENTRY_DURATION_MS = 400
 const ENTRY_DELAY_MS = 100
@@ -357,17 +356,8 @@ export default function Experience() {
             </button>
           )}
         </div>
-        <SortableList
-          items={sortedItems}
-          getId={(m) => m.id}
-          onReorder={async (orderedIds) => {
-            await adminApi.reorderExperience(orderedIds)
-            await refreshItems()
-          }}
-          isAdmin={isAdmin}
-          layout="vertical"
-        >
-          {(mission, i) => (
+        <div className="space-y-4 relative pl-0 sm:pl-2">
+          {sortedItems.map((mission, i) => (
             <MissionCard
               key={mission.id}
               mission={mission}
@@ -377,8 +367,8 @@ export default function Experience() {
               onEdit={() => setExperienceForm(mission)}
               onDelete={() => handleDelete(mission)}
             />
-          )}
-        </SortableList>
+          ))}
+        </div>
       </motion.div>
       )}
 
