@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { Pencil, Trash2, Plus, X } from 'lucide-react'
@@ -21,6 +21,23 @@ const cardVariants = {
     scale: isActive ? 1.03 : 1,
     transition: { delay: i * 0.1, duration: 0.4 },
   }),
+}
+
+/** ACTIVE first, then by end date descending (parsed from period). */
+function sortExperiencesByActiveThenEndDateDesc(list) {
+  const endKey = (m) => {
+    if (m.status === 'ACTIVE') return -Infinity
+    const p = (m.period || '').trim()
+    if (/present/i.test(p)) return -Infinity
+    const range = p.split(/\s*[–\-]\s*/)
+    const to = range.length >= 2 ? range[1].trim() : ''
+    const match = to.match(/(\d{4})(?:-?(\d{2}))?/) || to.match(/(\d{4})/)
+    if (!match) return 0
+    const y = parseInt(match[1], 10)
+    const month = match[2] ? parseInt(match[2], 10) : 12
+    return -(y * 12 + month)
+  }
+  return [...list].sort((a, b) => endKey(a) - endKey(b))
 }
 
 /** Parse impact string into bullet items (sentences); support array from API. */
@@ -248,6 +265,8 @@ export default function Experience() {
     }
   }
 
+  const sortedItems = useMemo(() => sortExperiencesByActiveThenEndDateDesc(items), [items])
+
   return (
     <motion.div
       ref={sectionRef}
@@ -337,7 +356,7 @@ export default function Experience() {
           )}
         </div>
         <div className="space-y-4 relative pl-0 sm:pl-2">
-          {items.map((mission, i) => (
+          {sortedItems.map((mission, i) => (
             <MissionCard
               key={mission.id}
               mission={mission}
