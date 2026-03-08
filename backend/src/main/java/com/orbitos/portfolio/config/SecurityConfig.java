@@ -57,12 +57,13 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /** Public API, actuator, and resume file: no auth, no JWT. */
+    /** Public API, root (keepalive/cron), actuator, and resume file: no auth, no JWT. */
     @Bean
     @Order(0)
     public SecurityFilterChain publicSecurityFilterChain(HttpSecurity http) throws Exception {
         http
             .securityMatcher(new OrRequestMatcher(
+                new AntPathRequestMatcher("/"),
                 new AntPathRequestMatcher("/api/public/**"),
                 new AntPathRequestMatcher("/actuator/**"),
                 RESUME_FILE_MATCHER
