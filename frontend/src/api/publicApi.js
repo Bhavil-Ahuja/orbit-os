@@ -47,6 +47,10 @@ export const publicApi = {
     return apiRequest("/api/public/publications");
   },
 
+  getSystems() {
+    return apiRequest("/api/public/systems");
+  },
+
   getResume() {
     return apiRequest("/api/public/resume");
   },

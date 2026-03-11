@@ -7,6 +7,7 @@ import org.springframework.core.env.MapPropertySource;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,6 +16,8 @@ import java.util.Map;
  * {@code spring.datasource.url}, {@code spring.datasource.username}, {@code spring.datasource.password}.
  * Prefer {@code DATABASE_PUBLIC_URL} when running locally — Railway's {@code DATABASE_URL} uses
  * {@code postgres.railway.internal}, which only resolves inside Railway. Use the public URL in .env for local dev.
+ * When the {@code dev} profile is active, this initializer does nothing so application-dev.yml
+ * (localhost Postgres) is used and DATABASE_URL does not override it.
  */
 public class DatabaseUrlInitializer implements ApplicationContextInitializer<org.springframework.context.ConfigurableApplicationContext> {
 
@@ -24,6 +27,13 @@ public class DatabaseUrlInitializer implements ApplicationContextInitializer<org
     @Override
     public void initialize(org.springframework.context.ConfigurableApplicationContext applicationContext) {
         ConfigurableEnvironment env = applicationContext.getEnvironment();
+        if (Arrays.asList(env.getActiveProfiles()).contains("dev")) {
+            return;
+        }
+        String existingUrl = env.getProperty("spring.datasource.url", "");
+        if (existingUrl != null && (existingUrl.contains("localhost") || existingUrl.contains("127.0.0.1"))) {
+            return;
+        }
         String databaseUrl = env.getProperty(DATABASE_PUBLIC_URL);
         if (databaseUrl == null || databaseUrl.isBlank()) {
             databaseUrl = env.getProperty(DATABASE_URL);

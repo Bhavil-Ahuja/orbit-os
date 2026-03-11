@@ -57,6 +57,12 @@ export const contentService = {
     return Promise.resolve(Array.isArray(data) ? data : [])
   },
 
+  async getSystems() {
+    if (useMock) return Promise.resolve([])
+    const data = fromBootstrap('systems')
+    return Promise.resolve(Array.isArray(data) ? data : [])
+  },
+
   async getSkills() {
     if (useMock) return Promise.resolve(mockSkills)
     const data = fromBootstrap('portfolio.skills')

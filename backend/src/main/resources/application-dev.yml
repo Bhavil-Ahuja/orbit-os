@@ -1,18 +1,19 @@
 # Dev profile: PostgreSQL, validate schema.
 # Start DB: docker compose up -d  (from repo root; set POSTGRES_PASSWORD in .env)
 # Run app: ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
-# Set SPRING_DATASOURCE_PASSWORD and ADMIN_PASSWORD in backend/.env (see .env.example)
+# Required: backend/.env with SPRING_DATASOURCE_USERNAME, SPRING_DATASOURCE_PASSWORD, ADMIN_PASSWORD (no defaults in this file).
 spring:
   config:
     import: optional:file:.env[.properties]
   datasource:
     url: jdbc:postgresql://localhost:5432/portfolio
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
 
+# Login: username from admin.auth (application.yml), password from ADMIN_PASSWORD in .env
 admin:
   auth:
     plainPassword: ${ADMIN_PASSWORD}
@@ -21,3 +22,4 @@ logging:
   level:
     org.hibernate.SQL: DEBUG
     com.orbitos: DEBUG
+    

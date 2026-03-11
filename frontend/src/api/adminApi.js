@@ -145,6 +145,34 @@ export const adminApi = {
     });
   },
 
+  // Systems (Systems I Build)
+  createSystemCategory(data) {
+    return apiRequest("/api/admin/systems", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  updateSystemCategory(id, data) {
+    return apiRequest(`/api/admin/systems/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  },
+
+  deleteSystemCategory(id) {
+    return apiRequest(`/api/admin/systems/${id}`, {
+      method: "DELETE",
+    });
+  },
+
+  reorderSystemCategories(orderedIds) {
+    return apiRequest("/api/admin/systems/reorder", {
+      method: "PUT",
+      body: JSON.stringify(orderedIds),
+    });
+  },
+
   // Resume
   updateResume(data) {
     return apiRequest("/api/admin/resume", {

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { useScrollSection } from '../hooks/useScrollSection'
 import { useAppStore } from '../store/useAppStore'
 import About from './About'
+import Systems from './Systems'
 import Experience from './Experience'
 import Projects from './Projects'
 import Publications from './Publications'
@@ -12,6 +13,7 @@ import StayInTouch from './StayInTouch'
 
 const SECTIONS = [
   { id: 'about', Component: About },
+  { id: 'systems', Component: Systems },
   { id: 'experience', Component: Experience },
   { id: 'projects', Component: Projects },
   { id: 'publications', Component: Publications },
@@ -23,6 +25,7 @@ const SECTIONS = [
 export default function Console() {
   const scrollRef = useRef(null)
   const aboutRef = useRef(null)
+  const systemsRef = useRef(null)
   const experienceRef = useRef(null)
   const projectsRef = useRef(null)
   const publicationsRef = useRef(null)
@@ -33,6 +36,7 @@ export default function Console() {
   const sectionRefs = useMemo(
     () => ({
       'about': aboutRef,
+      'systems': systemsRef,
       'experience': experienceRef,
       'projects': projectsRef,
       'publications': publicationsRef,

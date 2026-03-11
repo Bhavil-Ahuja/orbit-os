@@ -47,7 +47,7 @@ export const useAppStore = create((set, get) => ({
   adminAuthenticated: false,
   setAdminAuthenticated: (value) => set({ adminAuthenticated: value }),
 
-  // Scroll console: which section is in view (about | experience | projects | publications | skills | resume | stay-in-touch)
+  // Scroll console: which section is in view (about | systems | experience | projects | publications | skills | resume | stay-in-touch)
   activeSection: 'about',
   setActiveSection: (id) => set({ activeSection: id }),
 

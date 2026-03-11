@@ -24,4 +24,12 @@ public class CacheEvictionService {
     @CacheEvict(value = "resumeTerminal", allEntries = true)
     public void evictResumeTerminal() {
     }
+
+    @CacheEvict(value = "systems", allEntries = true)
+    public void evictSystems() {
+    }
+
+    @CacheEvict(value = "bootstrap", allEntries = true)
+    public void evictBootstrap() {
+    }
 }

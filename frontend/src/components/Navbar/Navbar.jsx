@@ -8,6 +8,7 @@ import { scrollToSection } from '../../hooks/useScrollSection'
 
 const sections = [
   { id: 'about', label: 'About' },
+  { id: 'systems', label: 'What I Build' },
   { id: 'experience', label: 'Experience' },
   { id: 'projects', label: 'Projects' },
   { id: 'publications', label: 'Publications' },

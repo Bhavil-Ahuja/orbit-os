@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * In-memory cache configuration. No Redis or external cache.
- * Cache names: navigation, portfolio, skillOrbits, resumeTerminal.
+ * Cache names: navigation, portfolio, skillOrbits, resumeTerminal, systems, bootstrap.
  */
 @Configuration
 public class CacheConfig {
@@ -18,7 +18,9 @@ public class CacheConfig {
             "navigation",
             "portfolio",
             "skillOrbits",
-            "resumeTerminal"
+            "resumeTerminal",
+            "systems",
+            "bootstrap"
     );
 
     @Bean

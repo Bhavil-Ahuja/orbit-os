@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useAppStore } from '../store/useAppStore'
 
-const SECTION_IDS = ['about', 'experience', 'projects', 'publications', 'skills', 'resume', 'stay-in-touch']
+const SECTION_IDS = ['about', 'systems', 'experience', 'projects', 'publications', 'skills', 'resume', 'stay-in-touch']
 const SECTION_TRANSITION_MS = 300
 
 /**
