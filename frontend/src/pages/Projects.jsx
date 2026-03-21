@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { Github, ExternalLink, Plus, Pencil, Trash2, X } from 'lucide-react'
-import { contentService } from '../services/contentService'
+import { contentService, useMock } from '../services/contentService'
 import { useMouseTilt } from '../hooks/useMouseTilt'
 import { useAppStore } from '../store/useAppStore'
 import { useIsAdmin } from '../hooks/useIsAdmin'
@@ -23,6 +23,8 @@ export default function Projects() {
 
   const isAdmin = useIsAdmin()
   const refetchBootstrap = useAppStore((s) => s.refetchBootstrap)
+  /** Live list from bootstrap so new projects show after refetch (matches server bootstrap payload). */
+  const bootstrapProjects = useAppStore((s) => s.bootstrapData?.portfolio?.projects)
 
   const refreshProjects = async () => {
     try {
@@ -36,8 +38,14 @@ export default function Projects() {
   }
 
   useEffect(() => {
-    contentService.getProjects().then((next) => setProjects(Array.isArray(next) ? next : []))
-  }, [])
+    if (useMock) {
+      contentService.getProjects().then((next) => setProjects(Array.isArray(next) ? next : []))
+      return
+    }
+    if (bootstrapProjects != null) {
+      setProjects(Array.isArray(bootstrapProjects) ? bootstrapProjects : [])
+    }
+  }, [bootstrapProjects])
 
   useEffect(() => {
     if (!isProjectsActive) return
