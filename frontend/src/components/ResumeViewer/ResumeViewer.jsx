@@ -1,10 +1,24 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { motion, AnimatePresence, useInView } from 'framer-motion'
 import { Maximize2, Download, Eye, FileText, Terminal, X } from 'lucide-react'
-import { contentService } from '../../services/contentService'
+import { contentService, useMock } from '../../services/contentService'
 import { getApiBase } from '../../api/client'
+import { useAppStore } from '../../store/useAppStore'
 
 const DOSSIER_FILENAME = 'BHAVIL_AHUJA.RES'
+
+/** Append cache-bust param for Cloudinary/browser cache when resume is re-uploaded. */
+function withResumeCacheBust(url, updatedAt) {
+  if (!url || typeof url !== 'string' || !updatedAt) return url
+  try {
+    const u = new URL(url)
+    u.searchParams.set('v', String(updatedAt))
+    return u.toString()
+  } catch {
+    const sep = url.includes('?') ? '&' : '?'
+    return `${url}${sep}v=${encodeURIComponent(String(updatedAt))}`
+  }
+}
 
 /** Treat example.com and other placeholders as "not configured" so we don't trigger 404 iframes. */
 function isPlaceholderResumeUrl(url) {
@@ -138,8 +152,11 @@ function TerminalView({ data }) {
 export default function ResumeViewer() {
   const containerRef = useRef(null)
   const inView = useInView(containerRef, { once: true, amount: 0.15 })
-  const [resume, setResume] = useState(null)
-  const [loading, setLoading] = useState(true)
+  /** Live resume from bootstrap so Inspect/Download match the iframe (iframe uses backend proxy with fresh DB; links used stale one-shot state before). */
+  const bootstrapData = useAppStore((s) => s.bootstrapData)
+  const bootstrapLoading = useAppStore((s) => s.bootstrapLoading)
+  const [mockResume, setMockResume] = useState(null)
+  const [mockLoaded, setMockLoaded] = useState(false)
   const [bootDone, setBootDone] = useState(false)
   const [fullscreen, setFullscreen] = useState(false)
   const [viewMode, setViewMode] = useState('dossier') // 'dossier' | 'terminal'
@@ -154,12 +171,21 @@ export default function ResumeViewer() {
   }, [fullscreen])
 
   useEffect(() => {
+    if (!useMock) return
     contentService
       .getResume()
-      .then(setResume)
-      .catch(() => setResume(null))
-      .finally(() => setLoading(false))
+      .then((r) => {
+        setMockResume(r)
+        setMockLoaded(true)
+      })
+      .catch(() => {
+        setMockResume(null)
+        setMockLoaded(true)
+      })
   }, [])
+
+  const resume = useMock ? mockResume : (bootstrapData?.resume ?? null)
+  const loading = useMock ? !mockLoaded : bootstrapLoading && bootstrapData == null
 
   // PDF URL: cache-bust with viewUrl + updatedAt so re-uploads and backend URL clears show fresh content (avoids stale cache after delete-from-Cloudinary).
   const iframePdfUrl = useMemo(
@@ -206,9 +232,12 @@ export default function ResumeViewer() {
     )
   }
 
+  const inspectHref = withResumeCacheBust(resume.viewUrl, resume.updatedAt)
+  const downloadHref = withResumeCacheBust(resume.downloadUrl, resume.updatedAt)
+
   const actions = [
-    { icon: Eye, label: 'Inspect', href: resume.viewUrl, external: true },
-    { icon: Download, label: 'Acquire Copy', href: resume.downloadUrl, download: true },
+    { icon: Eye, label: 'Inspect', href: inspectHref, external: true },
+    { icon: Download, label: 'Acquire Copy', href: downloadHref, download: true },
     { icon: Maximize2, label: 'Expand Interface', onClick: () => setFullscreen(true) },
   ]
 
