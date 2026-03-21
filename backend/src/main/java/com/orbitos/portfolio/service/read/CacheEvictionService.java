@@ -5,27 +5,29 @@ import org.springframework.stereotype.Service;
 
 /**
  * Evicts read-model caches. Call from admin write operations to keep cache consistent.
+ * {@link #evictPortfolio()}, {@link #evictNavigation()}, {@link #evictResumeTerminal()},
+ * {@link #evictSkillOrbits()}, and {@link #evictSystems()} also evict {@code bootstrap} (bootstrap embeds those slices).
  */
 @Service
 public class CacheEvictionService {
 
-    @CacheEvict(value = "navigation", allEntries = true)
+    @CacheEvict(cacheNames = { "navigation", "bootstrap" }, allEntries = true)
     public void evictNavigation() {
     }
 
-    @CacheEvict(value = "portfolio", allEntries = true)
+    @CacheEvict(cacheNames = { "portfolio", "bootstrap" }, allEntries = true)
     public void evictPortfolio() {
     }
 
-    @CacheEvict(value = "skillOrbits", allEntries = true)
+    @CacheEvict(cacheNames = { "skillOrbits", "bootstrap" }, allEntries = true)
     public void evictSkillOrbits() {
     }
 
-    @CacheEvict(value = "resumeTerminal", allEntries = true)
+    @CacheEvict(cacheNames = { "resumeTerminal", "bootstrap" }, allEntries = true)
     public void evictResumeTerminal() {
     }
 
-    @CacheEvict(value = "systems", allEntries = true)
+    @CacheEvict(cacheNames = { "systems", "bootstrap" }, allEntries = true)
     public void evictSystems() {
     }
 

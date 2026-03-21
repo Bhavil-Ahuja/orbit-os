@@ -42,7 +42,6 @@ public class AdminSystemCategoryController {
     public ResponseEntity<Map<String, Long>> create(@Valid @RequestBody CreateSystemCategoryRequestDto request) {
         Long id = systemCategoryService.create(request);
         cacheEvictionService.evictSystems();
-        cacheEvictionService.evictBootstrap();
         return ResponseEntity.ok(Map.of("id", id));
     }
 
@@ -51,7 +50,6 @@ public class AdminSystemCategoryController {
                                                     @Valid @RequestBody UpdateSystemCategoryRequestDto request) {
         SystemCategoryDto dto = systemCategoryService.update(id, request);
         cacheEvictionService.evictSystems();
-        cacheEvictionService.evictBootstrap();
         return ResponseEntity.ok(dto);
     }
 
@@ -59,7 +57,6 @@ public class AdminSystemCategoryController {
     public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
         systemCategoryService.delete(id);
         cacheEvictionService.evictSystems();
-        cacheEvictionService.evictBootstrap();
         return ResponseEntity.noContent().build();
     }
 
@@ -67,7 +64,6 @@ public class AdminSystemCategoryController {
     public ResponseEntity<Void> reorder(@RequestBody List<Long> orderedIds) {
         systemCategoryService.reorder(orderedIds);
         cacheEvictionService.evictSystems();
-        cacheEvictionService.evictBootstrap();
         return ResponseEntity.noContent().build();
     }
 }

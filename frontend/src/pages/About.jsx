@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { motion } from 'framer-motion'
 import { Pencil, X } from 'lucide-react'
 import Terminal from '../components/Terminal/Terminal'
-import { contentService } from '../services/contentService'
+import { contentService, useMock } from '../services/contentService'
 import { useAppStore } from '../store/useAppStore'
 import { useIsAdmin } from '../hooks/useIsAdmin'
 import { adminApi } from '../api/adminApi'
@@ -20,10 +20,17 @@ export default function About() {
 
   const isAdmin = useIsAdmin()
   const refetchBootstrap = useAppStore((s) => s.refetchBootstrap)
+  const bootstrapData = useAppStore((s) => s.bootstrapData)
 
   useEffect(() => {
-    contentService.getAbout().then((d) => setData(d ?? { content: '' }))
-  }, [])
+    if (useMock) {
+      contentService.getAbout().then((d) => setData(d ?? { content: '' }))
+      return
+    }
+    if (bootstrapData != null) {
+      setData(bootstrapData.portfolio?.about ?? { content: '' })
+    }
+  }, [bootstrapData])
 
   useEffect(() => {
     if (!data?.content) return

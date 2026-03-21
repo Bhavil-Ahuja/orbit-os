@@ -7,7 +7,7 @@ import * as THREE from 'three'
 import { Pencil, Trash2, Plus, X } from 'lucide-react'
 
 import { useIsAdmin } from '../hooks/useIsAdmin'
-import { contentService } from '../services/contentService'
+import { contentService, useMock } from '../services/contentService'
 import { adminApi } from '../api/adminApi'
 import { publicApi } from '../api/publicApi'
 import { useAppStore } from '../store/useAppStore'
@@ -513,6 +513,7 @@ export default function Skills() {
   const orbitInView = useInView(sectionRef, { amount: 0.2, once: false })
   const isAdmin = useIsAdmin()
   const refetchBootstrap = useAppStore((s) => s.refetchBootstrap)
+  const bootstrapData = useAppStore((s) => s.bootstrapData)
   const [skills, setSkills] = useState([])
   const [categories, setCategories] = useState([])
   const [skillForm, setSkillForm] = useState(null)
@@ -550,8 +551,15 @@ export default function Skills() {
   }
 
   useEffect(() => {
-    contentService.getSkills().then((next) => setSkills(Array.isArray(next) ? next : []))
-  }, [])
+    if (useMock) {
+      contentService.getSkills().then((next) => setSkills(Array.isArray(next) ? next : []))
+      return
+    }
+    if (bootstrapData != null) {
+      const s = bootstrapData.portfolio?.skills
+      setSkills(Array.isArray(s) ? s : [])
+    }
+  }, [bootstrapData])
 
   // Load categories when admin; if empty, seed from frontend then reload
   useEffect(() => {

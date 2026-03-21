@@ -4,7 +4,7 @@ import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { Pencil, Trash2, Plus, X } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore'
 import { useIsAdmin } from '../hooks/useIsAdmin'
-import { contentService } from '../services/contentService'
+import { contentService, useMock } from '../services/contentService'
 import { useMouseTilt } from '../hooks/useMouseTilt'
 import { adminApi } from '../api/adminApi'
 import { publicApi } from '../api/publicApi'
@@ -225,6 +225,7 @@ export default function Experience() {
   const prevSectionRef = useRef(activeSection)
   const isAdmin = useIsAdmin()
   const refetchBootstrap = useAppStore((s) => s.refetchBootstrap)
+  const bootstrapData = useAppStore((s) => s.bootstrapData)
 
   const refreshItems = async () => {
     try {
@@ -238,8 +239,15 @@ export default function Experience() {
   }
 
   useEffect(() => {
-    contentService.getExperience().then((next) => setItems(Array.isArray(next) ? next : []))
-  }, [])
+    if (useMock) {
+      contentService.getExperience().then((next) => setItems(Array.isArray(next) ? next : []))
+      return
+    }
+    if (bootstrapData != null) {
+      const exp = bootstrapData.portfolio?.experience
+      setItems(Array.isArray(exp) ? exp : [])
+    }
+  }, [bootstrapData])
 
   useEffect(() => {
     if (!inView) return

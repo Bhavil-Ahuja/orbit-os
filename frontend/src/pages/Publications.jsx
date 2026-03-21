@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { ExternalLink, Plus, Pencil, Trash2, X } from 'lucide-react'
-import { contentService } from '../services/contentService'
+import { contentService, useMock } from '../services/contentService'
 import { useMouseTilt } from '../hooks/useMouseTilt'
 import { useAppStore } from '../store/useAppStore'
 import { useIsAdmin } from '../hooks/useIsAdmin'
@@ -24,6 +24,7 @@ export default function Publications() {
   const inView = useInView(sectionRef, { once: true, amount: 0.2 })
   const isAdmin = useIsAdmin()
   const refetchBootstrap = useAppStore((s) => s.refetchBootstrap)
+  const bootstrapData = useAppStore((s) => s.bootstrapData)
 
   const refreshPublications = async () => {
     try {
@@ -37,8 +38,15 @@ export default function Publications() {
   }
 
   useEffect(() => {
-    contentService.getPublications().then((next) => setPublications(Array.isArray(next) ? next : []))
-  }, [])
+    if (useMock) {
+      contentService.getPublications().then((next) => setPublications(Array.isArray(next) ? next : []))
+      return
+    }
+    if (bootstrapData != null) {
+      const pubs = bootstrapData.portfolio?.publications
+      setPublications(Array.isArray(pubs) ? pubs : [])
+    }
+  }, [bootstrapData])
 
   useEffect(() => {
     if (!inView) return
