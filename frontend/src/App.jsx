@@ -1,6 +1,7 @@
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { lazy, Suspense } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import { useAppStore } from './store/useAppStore'
 import { useAdminAuthCheck } from './hooks/useAdminAuthCheck'
 import SpaceBackground from './components/SpaceBackground/SpaceBackground'
@@ -66,6 +67,7 @@ export default function App() {
   return (
     <div className="min-h-screen text-white gpu-layer">
       <AppContent />
+      <Analytics />
     </div>
   )
 }
