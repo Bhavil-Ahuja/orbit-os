@@ -6,9 +6,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,15 +31,7 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
-    /** Bypass Spring Security for resume PDF at root path so iframe never gets 401. */
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring()
-                .requestMatchers(
-                        new AntPathRequestMatcher("/resume-file"),
-                        new AntPathRequestMatcher("/Bhavil_Ahuja_Resume.pdf"));
-    }
-
+    /** Resume PDF paths: use permitAll via dedicated chains below (not WebSecurity#ignoring). */
     private static final OrRequestMatcher RESUME_FILE_MATCHER = new OrRequestMatcher(
             new AntPathRequestMatcher("/resume-file"),
             new AntPathRequestMatcher("/resume-file/"),
@@ -51,6 +43,7 @@ public class SecurityConfig {
     public SecurityFilterChain resumeFileSecurityFilterChain(HttpSecurity http) throws Exception {
         http
             .securityMatcher(RESUME_FILE_MATCHER)
+            .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
             .headers(headers -> headers.frameOptions(frame -> frame.disable()))
             .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
@@ -68,6 +61,7 @@ public class SecurityConfig {
                 new AntPathRequestMatcher("/actuator/**"),
                 RESUME_FILE_MATCHER
             ))
+            .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
             .headers(headers -> headers.frameOptions(frame -> frame.disable()))
             .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
@@ -79,6 +73,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .securityMatcher("/api/admin/**")
+            .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -97,6 +92,7 @@ public class SecurityConfig {
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http
             .securityMatcher("/**")
+            .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
             .headers(headers -> headers.frameOptions(frame -> frame.disable()))
             .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
