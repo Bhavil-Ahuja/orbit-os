@@ -26,10 +26,11 @@ spring:
           time_zone: UTC
     open-in-view: false
 
-# Optional: extra CORS origins for deployed frontend (comma-separated). Localhost 3000/5173 always allowed.
+# Optional: extra CORS origins (comma-separated). Env: APP_CORS_ALLOWED_ORIGINS
+# Localhost 3000/5173 always allowed. Include both apex and www if you use both.
 # app:
 #   cors:
-#     allowed-origins: https://yourdomain.com,https://www.yourdomain.com
+#     allowed-origins: https://yourdomain.com,https://www.yourdomain.com,https://your-app.vercel.app
 
 # Single-user admin auth. Set ADMIN_USERNAME, ADMIN_PASSWORD_HASH (BCrypt), ADMIN_JWT_SECRET in production.
 # Dev: username=admin. For password either use BCrypt hash below, or set ADMIN_PASSWORD=password (plain-text, dev only).
